@@ -1,0 +1,25 @@
+{
+  "private": "true",
+  "name": "lposdistributor",
+  "version": "0.0.1",
+  "description": "An LPoS distributor for the Waves Platform",
+  "main": "appng.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "lpos",
+    "waves",
+    "blockchain"
+  ],
+  "author": "Plukkie",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^3.2.2",
+    "aws-sdk": "^2.843.0",
+    "eval": "^0.1.6",
+    "http": "0.0.1-security",
+    "request": "^2.81.0",
+    "sync-request": "^4.0.2"
+  }
+}
