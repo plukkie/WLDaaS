@@ -13,7 +13,7 @@
 //////////////////////////////////////////////////
 
 const configfile = 'config.json' //json file with appng.js settings
-const s3_config_bucket = 'plukkie' //aws s3 bucket where configfile is stored
+const s3_config_bucket = '<my config bucket>' //aws s3 bucket where configfile is stored
 const s3_settings_path = 'scriptsettings/waveslposdistributer/' //sub path for configfile object
 const s3_config_object = s3_settings_path + configfile //full aws s3 object
 const appngrunfile = 'appng.run' 
