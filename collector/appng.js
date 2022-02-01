@@ -13,7 +13,7 @@
 //////////////////////////////////////////////////
 
 const configfile = 'config.json' //json file with appng.js settings
-const s3_config_bucket = '<my config bucket>' //aws s3 bucket where configfile is stored
+const s3_config_bucket = '<S3 BUCKET>' //aws s3 bucket where configfile is stored
 const s3_settings_path = 'scriptsettings/waveslposdistributer/' //sub path for configfile object
 const s3_config_object = s3_settings_path + configfile //full aws s3 object
 const appngrunfile = 'appng.run' 
@@ -59,7 +59,7 @@ var balancesuri
 var datadir
 var batchinfofile
 var s3_batchinfofile
-var payqueuefile
+//var payqueuefile
 var generatingbalance
 var batchinfo = {}
 var mybatchdata = {}
@@ -1210,7 +1210,7 @@ rawconfiguration.then ( function (rawdata) { //When finished reading config item
 	balancesuri = (apiuris['balances']).replace('{address}', myleasewallet)
 	datadir = toolconfigdata['datadir']; if (datadir.slice(-1) != '/') { datadir = datadir+'/' }
 	batchinfofile = toolconfigdata['batchinfofile']
-	payqueuefile = toolconfigdata['payqueuefile']
+	//payqueuefile = toolconfigdata['payqueuefile']
 	wld_s3_bucket = paymentconfigdata['wld_s3_bucket']
 	lastblockleasersfile = toolconfigdata['lastblockleasersfile']
 	wldaas_s3_trigger_bucket = paymentconfigdata['wldaas_s3_trigger_bucket']
