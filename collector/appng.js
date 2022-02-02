@@ -501,7 +501,6 @@ function write_end_result_trigger_file() {
 	s3body['mailheaders']['receivers'] = [ accountmail ]
 	s3body['mailheaders']['receiver'] = accountmail
 
-        //upload_s3_object_promise (wldaas_s3_trigger_bucket, s3object, s3body, 'json').then (function (result) { //Upload file to S3
         upload_s3_object_promise (s3bucket, s3object, s3body, 'json').then (function (result) { //Upload file to S3
 
                 console.log(' - End result written to s3 (triggerfile):              / ' + s3bucket + ' / ' + s3object);
@@ -852,7 +851,7 @@ var catch_relevant_blocks = function (startbl, index, block, myblock, wavesFees,
 		let prevblock
 
 		if (index === 0 || block.height == startbl) { //Check fees from old copy, that was kept from previous cycle of blocks
-			//prevblock = keeplastblock;
+
 			prevblock = lastblockarray.find(o => o.height == previousblockheight) //get previous block from this batch
 			console.log('Get block fees from previous block in previous batch [block ' + previousblockheight + ']')
 			//console.log(prevblock)
@@ -1155,21 +1154,9 @@ rawconfiguration.then ( function (rawdata) { //When finished reading config item
 	toolconfigdata = jsonconfiguration['toolbaseconfig']
 	paymentconfigdata = jsonconfiguration['paymentconfig']
 
-	//If no override values are given @program start or from batchinfo.json, below values are set and used
-	//myleasewallet 	  = paymentconfigdata['leasewallet']			//Default node wallet
-	//blockwindowsize   = parseInt(paymentconfigdata['blockwindowsize']) 	//How many blocks to collect
-	//startscanblock 	  = parseInt(paymentconfigdata['firstleaserblock'])	//Where to start scanning
-	//paymentstopblock  = startscanblock + blockwindowsize 			//Scan till block
-	//paymentstartblock = parseInt(paymentconfigdata['paystartblock']) 	//First block from which to take fee sharing into account
-
 	const cli_keys = toolconfigdata['clikeys'] //All possible cli argument keys that can be overwritten
 	get_cli_args(cli_keys); //If cli arguments are given, use these
 	
-	//console.log('\nCLI arguments that will be used [dict argobj]:')
-	//setTimeout ( function () {
-	//	console.log(argobj)
-	//	console.log()
-	//}, 500 )
 	
 	//Set all global vars specific to  collector session
 	s3_wallet_folder		= argobj['s3_wallet_folder']
@@ -1410,7 +1397,6 @@ rawconfiguration.then ( function (rawdata) { //When finished reading config item
 
 			payid = 1
 			nextpayid = payid + 1
-			//paymentstopblock = startscanblock + blockwindowsize (already declared, can be removed if tested succesfully)
 
 			batchinfo = { "batchdata" :
 					{
