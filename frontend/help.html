@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+
+    <title>Waves LPOS distributer Service - WLDaaS</title>
+
+<!--
+<style>
+.accordion-button:not(.collapsed) {
+    color: #0c63e4;
+    background-color: #FFA500;
+}
+-->
+
+</style>
+
+  </head>
+
+  <body>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+
+
+<div class="bg-dark bg-gradient text-white">
+
+<p class="fw-normal text-info  text-center fs-5 text-white text-opacity-75"><br>This list of FAQs is updated regularly with additional questions.<br><br></p>
+
+  <div class="container">
+    <div class="accordion accordion-flush" id="accordionExample">
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingOne">
+          <button class="accordion-button collapsed bg-dark text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+            Can you explain the WLDaaS service architecture and the life of a collector request?
+          </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+          <div class="accordion-body bg-dark bg-gradient">
+
+            <div class="row">
+
+              <div class="col">
+                  <div class="text text-white fw-light text-opacity-75 fs-6">
+                    <ol type="1">
+                      <li>Frontent portal is operated by the node owner</li>
+                      <li>Requests are send to an API gateway</li>
+                      <li>API gateway directs to serverless lambda functions;
+                        <ol type="a">
+                          <li>Signup handles account registration</li>
+                          <li>Login handles user login and profile load</li>
+                        </ol>
+                      </li>
+                      <li>A collector run is requested and the API gateway triggers a lambda function.
+                          A lambda function loads default settings from an S3 bucket and receives the user desired values. Lambda starts a container task.</li>
+                      <li>The container task is executed with the parameters received from lambda.</li>
+                      <li>It receives the requested block range from the Waves blockchain and analyzes the data for leases and transaction fees.</li>
+                      <li>If results from a previous run are available, these are loaded to continue.</li>
+                      <li>The results are stored to an S3 data bucket. The destination bucket depends on the user requested options.
+                        <ol type="a">
+                          <li>No pay proposal is desired. The results are stored in the email trigger bucket</li>
+                          <li>A pay proposal is desired. The results are stored in the payprocessor bucket for further processing</li>
+                          <li>Lambda prepayment processes the results and constructs a masstransaction array to be transfered later to the leasers</li>
+                          <li>The collector results and pay proposal data is stored in the email trigger bucket</li>  
+                        </ol>
+                      </li>
+                      <li>Lambda is triggered to send an email to the collector requester.
+                          This contains an summary of node forging results and various links like the fee  distribution report which can be shared with the leasers.</li>
+                      <li>Requester receives email and can use the delivered results to his/her needs. If a pay proposal was also requested, then a link is available which uses the Waveskeeper browser extension to excute the masstransactions to the leasers.</li>
+                    </ol>
+                  </div>
+              </div>
+
+            </div>
+
+            <div class="row">
+
+              <div class="col">
+                <img src="pics/WLDaaS.jpg" class="img-fluid" alt="Responsive image" width="100%" height="auto">
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingTwo">
+          <button class="accordion-button collapsed bg-dark text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+            Can you explain how the fee collector process works?
+          </button>
+        </h2>
+        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+          <div class="accordion-body bg-dark bg-gradient text-white fw-light text-opacity-75 fs-6">
+            <p>The collector process takes the form field values. These values are needed to determine where to start, where to stop and what share values you want to use for your leasers. If this is the first run, the collector will start collecting with the the 1<sup>st</sup> leaser block as startblock. The blockchain is scanned on every block from startblock to stopblock. It registers all lease activations and lease cancellations to your node and if a block has been secured (forged) by your node. A leaser gets a share of the the transaction fees in every block that is collected proportional to his/her ratio in the total lease budget.</p>
+            <p>When the collector has reached the stopblock, the results are compiled in a lease report html file, a self service package and a pay link. Also the values for all active leasers at the stopblock are stored in your WLDaaS bucket for usage in a subsequent collector run. An email is send to your account mail with a summary of the collector results and the links to the various resources you need for your leasers and for your administration.</p>
+            <p>The leasing report link can be shared with your leasers. The layout is the default WLDaaS layout. If you want to use your own report layout, you can use the link to download the self service package. This is a json file with all relevant key/values that you can use in your personal report if desired. The payment link will execute the masstransfer to your leasers. It triggers the Waves keeper plugin in your browser which signs the masstransaction and broadcasts the payment to the blockchain. A small fee is accounted to cover the cost of the WLDaaS service in the Cloud.</p>
+            <p>When you login in the system or you use the button 'collect nextrun data', it will load the data stored in the system to execute a sequential next collector run. This way you can easily have followup collector runs in which WLDaaS comes with proposed values. If this is not desired, you are free to adapt to your needs. TIP: use the settings button to define default values.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingThree">
+          <button class="accordion-button collapsed bg-dark text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+            Can you explain how the payment to the leasers works?
+          </button>
+        </h2>
+        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+          <div class="accordion-body bg-dark bg-gradient text-white fw-light text-opacity-75 fs-6">
+            <p>You can select the option 'incl. pay proposal'. This creates a json package of the collector results. The email that you receive contains a link which opens the WLDaaS website and downloads the json package. The Waveskeeper browser extension opens and the masstransactions are presented to you. After you confirm the signing, the transaction is send to the Waves blockchain.</p>
+            <div class="text text-info fw-light text-opacity-100 fs-6">
+              <p>NOTE<br>You are in control. A transaction can only be done if you accept the transaction. Your private key is NOT exchanged or exposed.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingFour">
+          <button class="accordion-button collapsed bg-dark text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+            Will a next collector run continue where the previous run stopped?
+          </button>
+        </h2>
+        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#accordionExample">
+          <div class="accordion-body bg-dark bg-gradient text-white fw-light text-opacity-75 fs-6">
+            <p>Yes</p>
+            <p>When a collector run finishes, the stopblock with it's relevant data is stored. Next time you login or if you click 'load nextrun data', WLDaaS loads the results and uses these as starting point. This is default behaviour. You can however adapt to your needs and change values.</p> 
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingFive">
+          <button class="accordion-button collapsed bg-dark text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+            Can I start the same collector run again?
+          </button>
+        </h2>
+        <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#accordionExample">
+          <div class="accordion-body bg-dark bg-gradient text-white fw-light text-opacity-75 fs-6">
+            <p>Yes</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingSix">
+          <button class="accordion-button collapsed bg-dark text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+            I did some collector runs. Can I start a run in a later stage with an older startblock then the last session?
+          </button>
+        </h2>
+        <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#accordionExample">
+          <div class="accordion-body bg-dark bg-gradient text-white fw-light text-opacity-75 fs-6">
+            <p>Yes</p>
+            <p>However, if there is no previous session data found for the requested startblock, it will search for the nearest lower startblock data found and adapt the startblock to the lower block found. For every finished session WLDaaS stores lastblock data which is the stopblock that was used for that session. The startblock nr. that it expects for this data match will be +1. If you start a session with a startblock in the past it can only start with that startblock if a lastblock session data file is found. If not it will adapt to the nearest lower lastblock session data file. WLDaaS will present you with the proposed adapted startblock and requests confirmation before it starts.</p>
+            <div class="text text-info fw-light text-opacity-100 fs-6">Example 1</div>
+            <div class="text text-info fw-light text-opacity-75 fs-6">
+              <p>
+                You collected the first run with startblock 50000 and stopblock 60000.<br>
+                Then collected with startblock 60001 and stopblock 100000.<br>
+                Then you request a collect run with startblock 65000.<br>
+                There is no lastblock data available for startblock 65000. => WLDaaS adapts to startblock 60001.
+              </p>
+            </div>
+            <div class="text text-info fw-light text-opacity-100 fs-6">Example 2</div>
+            <div class="text text-info fw-light text-opacity-75 fs-6">
+              <p>
+                You had a collect run with startblock 50000 and stopblock 60000.<br>
+                Then collected with startblock 60001 and stopblock 100000.<br>
+                Then you request a collect run with startblock 60000.<br>
+                There is no lastblock data available for startblock 60000, only for startblock 60001. => WLDaaS adapts to the nearest lowest startblock which is 50000.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingSeven">
+          <button class="accordion-button collapsed bg-dark text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
+            Can I have collector runs which are not continuous?
+          </button>
+        </h2>
+        <div id="collapseSeven" class="accordion-collapse collapse" aria-labelledby="headingSeven" data-bs-parent="#accordionExample">
+          <div class="accordion-body bg-dark bg-gradient text-white fw-light text-opacity-75 fs-6">
+            <p>This depends</p>
+            <p>There needs to be at least one continuous chain from sessions from the lowest startblock and the highest stopblock. All sessions in between are valid but a session that is requested with a startblock that is not continuous to the highest stopblock will miss out on blockdata and thus is incorrect by nature.</p>
+            
+            <div class="text text-info fw-light text-opacity-100 fs-6">Example 1</div>
+            <div class="text text-info fw-light text-opacity-75 fs-6">
+              <p>
+                You collected with startblock 5001 and stopblock 6000. Suppose this is the session with the highest stopblock ever.<br>
+                Then you request a run with startblock 6500 and stopblock 7000.<br>
+                This is INCORRECT. You need to scan from startblock 6001.
+              </p>
+            </div>
+            <div class="text text-info fw-light text-opacity-100 fs-6">Example 2</div>
+            <div class="text text-info fw-light text-opacity-75 fs-6">
+              <p>
+                You had a collect run with startblock 5001 and stopblock 6000 (run 1).<br>
+                Then you had a run with startblock 6001 and stopblock 7000 (run 2).<br>
+                Then you had a run with startblock 6001 and stopblock 6500 (run 3).<br>
+                Then you request a run with startblock 7001 and stopblock 9000 (run 4).<br>
+                This is CORRECT. There was already a continuous datarange available till stopblock 7000. So, allthough run 4 was discontinuous from run 3, it is still continuous to run 2.
+              </p>
+              <p>If there is no continuous blockdata available, WLDaaS will automatically adapt to the lower nearest startblock and inform you.</p>
+            </div>  
+          </div>  
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingEight">
+          <button class="accordion-button collapsed bg-dark text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight" aria-expanded="false" aria-controls="collapseEight">
+            Can you explain all formfield items and the buttons that can be used?
+          </button>
+        </h2>
+        <div id="collapseEight" class="accordion-collapse collapse" aria-labelledby="headingEight" data-bs-parent="#accordionExample">
+          <div class="accordion-body bg-dark bg-gradient text-white fw-light text-opacity-75 fs-6">
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">Wallet address</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                This is the Waves wallet address of your Node, aka. the address to which your leasers will lease. The value is populated automatically when you login WLDaaS.
+              </p>
+            </div>
+            
+            <div class="text text-white fw-light text-opacity-100 fs-6">Fee share %</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                This represents the percentage of the transaction fee amount that you want to share with your leasers. With 0% you share nothing. With 100% you share all and the node owner doesn't make any profit.<br>TIP: you can make this value default in the 'settings' page of WLDaaS. 
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">Block reward share %</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                This represents the percentage of the blockreward amount that you want to share with your leasers. With 0% you share nothing. With 100% you share all and the node owner doesn't make any profit.<br> TIP: you can make this value default in the 'settings' page of WLDaaS.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">1<sup>st</sup> leaser block</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                This needs to be the block with the first active lease or earlier. You only need to enter this once. If you click 'get 1<sup>st</sup> lease' then WLDaaS will discover this block for you. You only need to change it if you want to start allover again and start scanning from this block as first scan.<br>
+                If this is the first collector run, set the startblock with the same value as your 1<sup>st</sup> leaser block.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">Start block</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                This is the start block from where your collector run will start collecting blockdata. Default behaviour of WLDaaS is to load this automatically when you login to the system and proceed from the end of the previous collector run. The startblock value will be +1 from where the previous session ended. If your previous session ended at block 165000 then the startblock will be set at 165001. You are free to adapt to your needs offcourse if you maybe want to start again from an earlier block.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">Stop block</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                This is the last block that will be inclusive to your collector run. When the collector run finishes, WLDaaS will store this last blockdata with the next block as start reference. The continuous next run start value is automatically picked up when you login again or you click 'load nextrun data'.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">Last block</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                This is the current last block value of the Main blockchain of Waves. All block values need to be lower than last block. 
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">button 'get 1<sup>st</sup> lease'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                Discover the block with the first active lease. 
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">button 'unlock 1<sup>st</sup> lease'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                This needs to unlock your 1<sup>st</sup> leaser block value if you want to change it in a later stage. In principal you do not change it anymore and the value is only used for your first run. It can do no harm if you would change it later but it has only meaning if you would start all over and start collecting from this block.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">button 'load nextrun data'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                Discover the last collector run that was done and load the 'Start block' value for the continuous next run.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">button 'collect'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                Start the collector run based on the values you entered.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">button '?'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                This help page.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">toggle switch 'incl. pay proposal'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                WLDaaS will create a masspayment json object with the waves fee distribution amounts for all leasers. After the collector has finished you receive an email with a payment link. If you click the link, WLDaaS website is opened and the Waves Keeper browser extension presents you with the masspayment transactions.
+                If you do not click the option 'incl. pay proposdal' then the payment link is not send along the email.
+                <br> TIP: you can make this value default in the 'settings' page of WLDaaS.  
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">toggle switch 'use last as stop'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                This will set the Stop block value to the current last block of the Waves blockchain when you start a collector run.
+                <br> TIP: you can make this value default in the 'settings' page of WLDaaS.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">toggle switch 'overwrite'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                This option will force collector scanning from the requested Start block independently if a previous session data file is found or not.
+              </p>
+              <div class="text text-info fw-light text-opacity-100 fs-6">
+                <p>NOTE<br>You have the risk to miss lease transactions and forged blocks if you use overwrite. Use at your own risk.</p>
+              </div>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">toggle switch 'free run'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                'Free run' requests a collector run without any charges. For NON free runs a small cost is charged to cover the cloud cost of WLDaaS. Every new user that registers for WLDaaS will will get some free runs. If the 'free run' budget is depleted, this will reject the requested collector run and a small fee is charged for your collecor request which is presented upfront before the collector run is started.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">wallet address</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                Enter your Waves wallet address that your node uses. This is the address which your leasers use.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">username</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                Email address of your account. The address is used to send results after the collector has finished.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">password</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                Your WLDaaS account password. 
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">button 'login'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                Activate login into WLDaas and loads your profile.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">button 'signup'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                This registers your account details.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">button 'settings'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                Brings you to the page where you can configure some default settings. These settings will be the default values when you login and when you start a collector run.
+              </p>
+            </div>
+
+            <div class="text text-white fw-light text-opacity-100 fs-6">button 'change password'</div>
+            <div class="text text-white fw-light text-opacity-75 fs-6">
+              <p>
+                Brings you to the page to change your login password.
+              </p>
+            </div>
+
+          </div>  
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingNine">
+          <button class="accordion-button collapsed bg-dark text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNine" aria-expanded="false" aria-controls="collapseNine">
+            Can I get a development package to integrate the results and payment in my own environment?
+          </button>
+        </h2>
+        <div id="collapseNine" class="accordion-collapse collapse" aria-labelledby="headingNine" data-bs-parent="#accordionExample">
+          <div class="accordion-body bg-dark bg-gradient text-white fw-light text-opacity-75 fs-6">
+            <p>
+              Yes
+            </p>
+            <p>
+              After the collector has finished you receive an email that contains links to download various resources. Be sure to select the option 'incl. pay proposal'. The following assets will be available for download;
+              <ul>
+                <li>A link with the default fee distribution report in html format</li>
+                <li>A link to the distribution self service package. This is a json file with the following details;
+                  <ul>
+                    <li>distribution amounts for your leasers</li>
+                    <li>summary of the collector run results</li>
+                    <li>session details of the collector run</li>
+                  </ul>
+                </li>
+              </ul>
+            </p>
+            <p>You can use these details to embed them in your own environment. A future release will open WLDaaS to upload your own html template which will construct the html report directly for you as a service.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingTen">
+          <button class="accordion-button collapsed bg-dark text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTen" aria-expanded="false" aria-controls="collapseTen">
+            Can I operate WLDaaS via API?
+          </button>
+        </h2>
+        <div id="collapseTen" class="accordion-collapse collapse" aria-labelledby="headingTen" data-bs-parent="#accordionExample">
+          <div class="accordion-body bg-dark bg-gradient text-white fw-light text-opacity-75 fs-6">
+            <p>Yes</p>
+            <p>The API gives you following capabilities:
+              <ul>
+                <li><div class="text text-white fw-light text-opacity-100 fs-6">Request nextrun data</div>
+                    This request gets the blockdata that is continuous to the last collector session done. If you want to start a continuous collector run, it means the paystart block of your run should be the stopblock+1 of your previous run. By requesting the nextrun data, you get a visual on these blocks.
+                </li>
+                <li><div class="text text-white fw-light text-opacity-100 fs-6">Request a unique payid to be used as reference id in a Waves Txs</div>
+                    This requests a onetime reference payid. The utf8 value received, should be used in the attachment of your Waves transaction. The Waves transaction is a small fee required for the WLDaaS cloud service cost coverage. When a collector run is requested, you should send the Waves transaction id along.<br>
+                    The WLDaaS engine will check if the service has been payed for and then the collector task is started.</li>
+                <li><div class="text text-white fw-light text-opacity-100 fs-6">Request a collector run</div>
+                    A collector run is started when all used options are valid. When finished an email is send.</li>
+              </ul>
+            </p>
+
+            <p>The workflow to request a collector run consists of the following command sequences (I use 'jq' to organise pretty json output on my cli);
+
+              <ol>
+
+                <li>
+                  <div class="text text-white fw-light text-opacity-100 fs-6">Request a unique WLDaaS payid</div><br>
+                  <div class="alert alert-dark bg-dark" role="alert">
+                    <span class="text text-info">
+                    <strong>curl -s "https://cz9kuult00.execute-api.eu-north-1.amazonaws.com/prod/collect\</strong><br>
+                    <strong>?apikey=</strong><span class="text text-light text-opacity-75">&lt;<i>Your WLDaaS API key</i>&gt;</span>\<br>
+                    <strong>&wallet=</strong><span class="text text-light text-opacity-75">&lt;<i>Your Waves node wallet address</i>&gt;</span>\<br>
+                    <strong>&email=</strong><span class="text text-light text-opacity-75">&lt;<i>Your WLDaaS account email</i>&gt;</span>\<br>
+                    <strong>&getuniquepayid=</strong><span class="text text-light text-opacity-75">true</span>\<br>
+                    <strong>&payblock=</strong><span class="text text-light text-opacity-75">&lt;<i>block where to start your collector run, i.e. 2879362</i>&gt;</span> | jq "."</strong>
+                    </span>
+                  </div>
+
+                    <p>This will respond with a payid and with a corresponding previousleaseinfo block like this example output:<br>
+                    {"uniquepayid": {"utf8": "9cc30bf1-a752-4c87-8efc-0c16023f4b7d", <span class="text text-info">"base58": "SGuWgLmZkeNm2qea4KZTRq9XEAipmAadkCNV52sdpcSJyQy1D", "previousleaseinfo": "2879362"</span>}</p>
+                    <p class="text text-info">NOTE<br>Pay special attention to the previousleaseinfo block. If your requested payblock is lowered to another blocknumber, you should use this previousleaseinfo blocknumber else you have a discontinuous collector run which does not extend to an available finished earlier run! If your requested payblock is continuous to an older run which is what you normally would want then the returned previousleaseinfo block should be indentical to your requested payblock.</p>
+                </li>
+
+                <li><div class="text text-white fw-light text-opacity-100 fs-6">Broadcast a signed Waves transaction to the WLDaaS service wallet address ( 3P6CwqcnK1wyW5TLzD15n79KbAsqAjQZ2HH )</div><br>
+                  In this example I will use my waves node API interface to sign and broadcast the transaction. The following details are needed;
+                  <ul>
+                    <li>recipient  :  3P6CwqcnK1wyW5TLzD15n79KbAsqAjQZ2HH  (WLDaaS service wallet)</li>
+                    <li>amount  :  3000000  (0.03 Waves)</li>
+                    <li>fee : 100000  (0.001 waves)</li>
+                    <li>sender : &lt;Your Waves node wallet address&gt;</li>
+                    <li>API key : &lt;Your waves node API key&gt;</li>
+                    <li>attachment  :  &lt;Use base58 value of the uniquepayid that was received&gt;  (above example SGuWgLmZkeNm2qea4KZTRq9XEAipmAadkCNV52sdpcSJyQy1D)</li>
+                  </ul><br>
+
+                  <div class="text text-white fw-light text-opacity-100 fs-6">Sign transaction</div>
+                  <div class="alert alert-dark bg-dark" role="alert">
+                    <span class="text text-info">
+                      <strong>signedtxs=`curl -X POST "http://localhost:6869/transactions/sign"</strong>\<br>
+                      <strong>-H "X-API-Key:</strong><span class="text text-light text-opacity-75"> &lt;<i>Your waves node API key</i>&gt;</span>\<br>
+                      <strong>-H "Content-Type: application/json"</strong>\<br>
+                      <strong>-d '{"type":4,"amount":3000000,"recipient":"3P6CwqcnK1wyW5TLzD15n79KbAsqAjQZ2HH","feeAsset":null,"fee":100000,"sender":"</strong><span class="text text-light text-opacity-75">&lt;<i>Your waves node wallet address</i>&gt;</span><strong>","attachment":"</strong><span class="text text-light text-opacity-75">&lt;<i>The base58 value of the uniquepayid received</i>&gt;</span><strong>"}'`</strong>
+                    </span>
+                  </div>
+                  
+                  <div class="text text-white fw-light text-opacity-100 fs-6">Broadcast transaction</div>
+                  <div class="alert alert-dark bg-dark" role="alert">
+                    <span class="text text-info">
+                      <strong>curl -X POST "http://localhost:6869/transactions/broadcast"\</strong><br>
+                      <strong>-H "Content-Type: application/json"\</strong><br>
+                      <strong>-d `echo $signedtxs`</strong><br>
+                    </span>
+                  </div>
+
+                  This is gives a respons similar like this:<br>
+                  {"type":4,<span class="text text-info">"id":"EBPJV9TJ6dxxWPM2XsKNtZRkTCAzxfLV8uAW64sLokQp</span>","sender":"3P7ajba4wWLXq6t1G8VaoaVqbUb1dDp8fm4",<br>
+                  "senderPublicKey":"n51Y7z4ULb3Fv2QW4KWTgHzG8RWXu1UTKQ7jyos5Vgq","fee":100000,"feeAssetId":null,<br>
+                  "timestamp":1642777842375,"proofs":["2somGZA9UCz1ewFdMDc3szSoEu4eokYa9GwAkoRWoBU49n4TzAM5nTcXqh1z9LEKYQxkynXMcut2ftvFfYjicCsT"],<br>
+                  "signature":"2somGZA9UCz1ewFdMDc3szSoEu4eokYa9GwAkoRWoBU49n4TzAM5nTcXqh1z9LEKYQxkynXMcut2ftvFfYjicCsT","version":1,<br>
+                  "recipient":"3P6CwqcnK1wyW5TLzD15n79KbAsqAjQZ2HH","assetId":null,"feeAsset":null,"amount":3000000,<br>
+                  "attachment":"SGuWgLmZkeNm2qea4KZTRq9XEAipmAadkCNV52sdpcSJyQy1D"}
+                  <br><br>
+                  Take note of the <span class="text text-info">"id"</span> value in the respons which represents the Waves transaction id. This string should be send along in the next step to start your collector run.
+                </li>
+                <br>
+                <li><div class="text text-white fw-light text-opacity-100 fs-6">Request your collector run</div><br>
+                  <div class="alert alert-dark bg-dark" role="alert">
+                    <span class="text text-info">
+                      <strong>curl -s "https://cz9kuult00.execute-api.eu-north-1.amazonaws.com/prod/collect\</strong><br>
+                      <strong>?apikey=</strong><span class="text text-light text-opacity-75">&lt;<i>Your WLDaaS API key</i>&gt;</span>\<br>
+                      <strong>&wallet=</strong><span class="text text-light text-opacity-75">&lt;<i>Your Waves node wallet address</i>&gt;</span>\<br>
+                      <strong>&email=</strong><span class="text text-light text-opacity-75">&lt;<i>Your WLDaaS account email</i>&gt;</span>\<br>
+                      <strong>&startblock=</strong><span class="text text-light text-opacity-75">&lt;<i>Your first leaser block, i.e 1207002</i>&gt;</span>\<br>
+                      <strong>&payblock=</strong><span class="text text-light text-opacity-75">&lt;<i>Your requested block/previousleaseinfo returned, this example 2879362</i>&gt;</span>\<br>
+                      <strong>&stopblock=</strong><span class="text text-light text-opacity-75">&lt;<i>The last block of your scan, i.e. 2901000</i>&gt;</span>\<br>
+                      <strong>&pay=</strong><span class="text text-light text-opacity-75">true</span>\<br>
+                      <strong>&feeshare=</strong><span class="text text-light text-opacity-75">90</span>\<br>
+                      <strong>&rewardshare=</strong><span class="text text-light text-opacity-75">90</span>\<br>
+                      <strong>&mywavespaymenttxid=</strong><span class="text text-light text-opacity-75">EBPJV9TJ6dxxWPM2XsKNtZRkTCAzxfLV8uAW64sLokQp</span><strong>"</strong><br>
+                    </span>
+                  </div>
+
+                  <span class="text text-info text-opacity-100">NOTE<br>
+                    The pay=true option does not mean that the payment to the leasers is done. It just means that the collector prepares a payment link to a json file.<br>
+                    If you click the payment link, waveskeeper reads the json file which contains the amounts for the leasers and you can accept and execute the transaction.
+                  </span>
+                </li>
+              </ol>
+            </p> 
+          </div>  
+        </div>
+
+      </div>
+
+
+    </div>
+</div>
+
+  
+    <br>
+  </div>
+
+<br>
+
+
+<div class="container">
+  <div class="row g-3 align-items-center">
+    <div class="col-md-2">
+      <button type="submit" id="mainpage" onclick="go_main_page(); return false;" class="btn btn-info btn-sm text-dark text-opacity-80 bg-gradient">main</button>
+    </div>
+  </div>
+</div>
+
+
+
+    <script>
+
+
+    const mainpage = 'index.html'
+
+    /* Method to go back to main page
+    */
+    const go_main_page = function () {
+
+      const urlquerystring = new URLSearchParams(window.location.search)  //Get url param string that was used
+      const wallet = urlquerystring.get('wallet')
+      let urlparams = '?settings=transfer'
+      const url = window.location.href.split('?')[0]  //Get url without params
+      if (wallet != undefined && wallet != null && wallet != '') {
+          urlparams += '&wallet=' + wallet
+          window.history.pushState({}, document.title, "/" + mainpage + urlparams)
+      } else { window.history.pushState({}, document.title, "/" + mainpage) }
+      
+      window.location.reload(true) //Reload frontend
+    }
+
+    </script>
+
+  </body>
+
+</html>

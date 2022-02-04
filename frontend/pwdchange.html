@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+
+    <title>Waves LPOS distributer Service - WLDaaS</title>
+
+  </head>
+
+  <body>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+
+    <!-- Option 2: Separate Popper and Bootstrap JS -->
+    <!--
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-eMNCOe7tC1doHpGoWe/6oMVemdAVTMs2xqW4mwXrXsW0L84Iytr2wi5v2QjrP/xp" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.min.js" integrity="sha384-cn7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>
+    -->
+
+    
+
+    <!-------------------------------- MAIN APP START ----------------------------------------->
+
+<center><h3><br><span class="badge bg-info text-dark">::   Waves Leasing payout distributing service   ::</span><br><br></h3></center>
+
+
+<div class="container">
+
+	<div class="row g-3 align-items-center">
+		<div class="col-md-6">
+			<nav class="navbar navbar-dark bg-primary">
+  			<div class="container-fluid">
+    			<span class="navbar-brand mb-0 h1">Change password</span>
+  			</div>
+			</nav>
+			<br>
+		</div>
+	</div>
+
+	<div class="row g-3 align-items-center">
+  	<div class="col-md-2">
+    	<label for="nodewallet" class="col-form-label form-control-sm">Wallet address</label>
+  	</div>
+  	<div class="col-md-4">
+    	<input type="text" id="nodewallet" minlength="35" maxlength="35" class="form-control form-control-sm" placeholder="** The Waves wallet address of your node **">
+  	</div>
+	</div>
+
+	<div class="row g-3 align-items-center">
+		<br>
+	</div>
+
+	<div class="row g-3 align-items-center">
+  	<div class="col-md-2">
+    	<label for="username" class="col-form-label form-control-sm">Username</label>
+  	</div>
+  	<div class="col-md-4">
+    	<input type="email" minlength="6"  maxlength="60" id="username" class="form-control form-control-sm" placeholder="** your email **">
+  	</div>
+	</div>	
+	
+	<div class="row g-3 align-items-center">
+		<br>
+	</div>
+
+	<div class="row g-3 align-items-center">
+		<br>
+  	<div class="col-md-2">
+    	<label for="newpassword" class="col-form-label form-control-sm">New password</label>
+  	</div>
+  	<div class="col-md-4">
+    	<input type="password" minlength="8"  maxlength="60" id="newpassword" class="form-control form-control-sm" placeholder="** password <min 8 / max 60 chars> **">
+  	</div>
+	</div>	
+	
+	<div class="row g-3 align-items-center">
+		<br>
+	</div>
+
+	<div class="row g-3 align-items-center">
+		<br>
+  	<div class="col-md-2">
+    	<label for="retypepassword" class="col-form-label form-control-sm">Retype password</label>
+  	</div>
+  	<div class="col-md-4">
+    	<input type="password" minlength="8"  maxlength="60" id="retypepassword" class="form-control form-control-sm" placeholder="** retype new password **">
+  	</div>
+	</div>
+
+	<div class="row g-3 align-items-center">
+		<br>
+		<br>
+	</div>
+
+	<div class="row g-3 align-items-center">
+			<div class="col-md-2">
+  				<button type="submit" id="mainpage" onclick="go_main_page(); return false;" class="btn btn-primary btn-sm">main</button>
+  				<button type="submit" id="savesettings" onclick="save_settings(); return false;" class="btn btn-primary btn-sm">save</button>
+  		</div>
+  		<div class="col-md-4">
+  			  <button type="submit" id="loadingbutton" hidden class="btn btn-primary btn-sm">busy....
+  			  	<span class="spinner-border spinner-border-sm"></span>
+  			  </button>
+  		</div>
+	</div>
+
+</div>
+
+
+
+
+<center><br><span class="badge text-dark">Brought to you by Plukkieforger</span></center>
+<center><p id="mywallet"></p></center>
+
+<br>
+
+<div class="alert alert-primary" role="alert" >
+  <a class="nav-link" href="http://www.cryptouniverse.nl">Cryptouniverse.nl</a>
+</div>
+
+
+<!-------------------------------- MY SCRIPTS & FUNCTIONS START ----------------------------------------->
+
+<script>
+
+const env			= 'dev' //set here to test on 'dev' or 'prod' environment
+//---------------------------------------------------------------------------------------------
+const baseapi		= 'https://cz9kuult00.execute-api.eu-north-1.amazonaws.com' //My API gateway
+const stage 		= '/' + env
+const GET_path		= '/collect'
+const account_path	= '/account'
+const login			= '/login'
+const defaultwallet = '3P7ajba4wWLXq6t1G8VaoaVqbUb1dDp8fm4'
+const mywebsite		= "Cryptouniverse.nl"
+const mainpage 		= "index.html"
+const formfieldarray =	[			//Define array with all formfield id's
+													'nodewallet',
+													'username',
+													'newpassword',
+													'retypepassword'
+												]
+const pwd_reset_confirm_arg = 'pwdresetconfirmation'
+//---------------------------------------------------------------------------------------------
+const urlquerystring	= new URLSearchParams(window.location.search)  //Url parameterstring without '?'
+const ww							= urlquerystring.get('wallet')
+const passwordresetconfirmation = { "pwdresetconfirmation" : urlquerystring.get(pwd_reset_confirm_arg) } //base58 string of password reset request
+let params = '' //used to transfer params between pages
+let globalobject = {}
+
+document.getElementById("mywallet").innerHTML = defaultwallet //Set my wallet address as footer when page loads
+
+
+function loading (run='', buttonid) {
+
+	let spinning
+  const id = document.getElementById(buttonid)
+
+  if (id.hidden == true) {
+  	spinning = false
+  } else {
+  	spinning = true
+  }
+
+  if (run == 'start' && spinning == false) {			//Show spinning button
+  	id.hidden = false
+  } else if (run == 'stop' && spinning == true) {	//Hide spinning button
+  	id.hidden = true
+  }
+}
+
+
+
+/* Method to go back to main page
+ */
+const go_main_page = function () {
+		let urlparams = '?settings=transfer'
+		const url = window.location.href.split('?')[0]  //Get url without params
+		const wallet = document.getElementById('nodewallet').value
+		if (wallet != undefined && wallet != null && wallet != '') {
+			urlparams += '&wallet=' + wallet
+		}
+    window.history.pushState({}, document.title, "/" + mainpage + urlparams)
+    window.location.reload(true) //Reload frontend
+}
+
+
+/* Function that collects all formfield values
+ * and creates an url param string and json dict
+ * formfieldarray has all id names
+ * return ; 'url param string or json object'
+ */
+const collect_form_values = function (type='url') {
+
+	let jsonobject = {}
+	params = ''
+	let v
+	
+	//alert(globalobject['usernameb64'])
+	//alert(atob(globalobject['usernameb64'])) //Bas64 decoded username
+
+	for (const index in formfieldarray) {
+			if (formfieldarray[index] == 'username') {
+				if (globalobject['usernameb64']) {
+					v = atob(globalobject['usernameb64']) //Take decrypted base64 value
+				} else { v = document.getElementById(formfieldarray[index]).value } //The value of the fields
+			} else {
+
+				v = document.getElementById(formfieldarray[index]).value //The value of the fields
+			}
+					
+			if (v != undefined && v != '' && v != null) {
+				if (index < formfieldarray.length-1) { params += '&'}
+				jsonobject[formfieldarray[index]] = v //Add to json object
+				params += formfieldarray[index]+'='+v //Add to url paramstring
+			}
+	}
+	//console.log(jsonobject)
+	//alert(params)
+	if (type == 'url') {
+		return params
+	} else if (type == 'json') {
+		return jsonobject  //return string of JSON object of all settings	
+	}
+}
+
+
+/* Method to SET all formfield values in the frontend,
+ * based on URL params collected
+ */ 
+const set_formfield_values_from_url  = function () {
+
+		const paramstring = window.location.href.split('?')[1]  //Get url parameterstring
+		if (paramstring) {
+			const array = paramstring.split('&')
+			for (index in array) {
+				const splitarray = array[index].split('=')
+				if (splitarray.length > 1) {
+					const id = splitarray[0]
+					let value
+					if (id == 'username') {
+						value = "***************"
+						globalobject['usernameb64'] = splitarray[1]
+					} else {
+						value = splitarray[1]
+					}
+					
+
+					document.getElementById(id).value = value
+					document.getElementById(id).disabled = true
+				}
+			}
+		}
+}
+
+
+
+const upload_new_login_data = async (jsondata) => {
+
+		const endpoint 			= baseapi + stage + account_path + login
+		const options				= {	method: 'POST',
+														credentials: 'include',
+														mode: 'cors',
+														headers: {	"Content-type": "application/json; charset=UTF-8" },
+														body: JSON.stringify(jsondata) }
+														//body: jsondata }
+
+		
+		try {
+				loading(run='start', 'loadingbutton')
+    		const response = await fetch(endpoint, options)			
+    		const data = await response.json() //This is the body of the response
+    		loading(run='stop', 'loadingbutton')
+        console.log(data)
+        if (data.alert)  { alert(data.alert) }
+        
+     } catch (err) {
+				console.log(err)
+				loading(run='stop', 'loadingbutton')
+    }
+
+}
+
+
+
+// Check if valid values are used in the formfield
+// if invalid, alert messages
+// return boolean true if valid
+// return boolean false if invalid
+const check_valid_values_used = function () {
+
+	let name
+
+	if (globalobject['usernameb64']) {
+		name = atob(globalobject['usernameb64'])
+	} else{
+		name = document.getElementById("username").value
+	}
+	const newpwd 			= document.getElementById("newpassword").value
+	const repeatpwd		= document.getElementById("retypepassword").value
+	const wallet			= document.getElementById("nodewallet").value
+	const mailformat	= /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+
+	if (newpwd != repeatpwd) {
+		alert('Passwords do not match!')
+		return false
+	} else if (!name.match(mailformat)) {
+		alert('Invalid email syntax used!')
+		return false
+	} else if ( name.length > 5 && newpwd.length > 7 && repeatpwd.length > 7 && wallet.length == 35 ) { //All fields are filled
+		return true
+	} else {
+		alert('Please fill all fields correct.')
+		return false
+	}
+}
+
+
+const save_settings = async () => {
+
+	/* BLOCKED LINE FOR TESTING */ const result = check_valid_values_used () //Are valid values used
+
+	/*FOR TESTING DELETE LINE WHEN DONE */ //const result = true
+
+	if (result == true) { //Send API POST call to lambda
+		/* BLOCKED LINE FOR TESTING */ const login_details = collect_form_values(type='json') //json object with wallet, username, newpassword
+
+		/* FOR TESTING DELETE LINE WHEN DONE */ //const login_details = { "nodewallet" : "3P7ajba4wWLXq6t1G8VaoaVqbUb1dDp8fm4", "username" : "plukkie@gmail.com", "newpassword" : "12345678" }
+		//console.log(login_details)
+		upload_new_login_data(login_details)
+	} else { //Invalid values used
+		return
+	}
+
+	
+}
+
+if (	urlquerystring.get(pwd_reset_confirm_arg) != null &&
+			urlquerystring.get(pwd_reset_confirm_arg) != undefined &&
+			urlquerystring.get(pwd_reset_confirm_arg) != '' ) { //Password reset confirmation clicked
+
+			//console.log(passwordresetconfirmation)
+
+			upload_new_login_data (passwordresetconfirmation)
+
+
+} else {
+	console.log()
+	//Run function that sets values in formfield, transfered from mainpage if available
+	set_formfield_values_from_url ()
+}
+
+</script>
+
+
+  </body>
+
+</html>

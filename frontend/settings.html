@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+
+    <title>Waves LPOS distributer Service - WLDaaS</title>
+
+  </head>
+
+  <body>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+
+    <!-- Option 2: Separate Popper and Bootstrap JS -->
+    <!--
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-eMNCOe7tC1doHpGoWe/6oMVemdAVTMs2xqW4mwXrXsW0L84Iytr2wi5v2QjrP/xp" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.min.js" integrity="sha384-cn7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>
+    -->
+
+    
+
+    <!-------------------------------- MAIN APP START ----------------------------------------->
+
+<center><h3><br><span class="badge bg-info text-dark">::   Waves Leasing payout distributing service   ::</span><br><br></h3></center>
+
+
+<div class="container">
+  
+	<div class="row g-3 align-items-center">
+  	<div class="col-md-2">
+    	<label for="servicename" class="col-form-label form-control-sm">Your service name</label>
+  	</div>
+  	<div class="col-md-4">
+    	<input type="text" id="servicename" class="form-control form-control-sm" placeholder=" Name used in the distribution reports">
+  	</div>
+	</div>
+
+	<div class="row g-3 align-items-center">
+  	<div class="col-md-2">
+    	<label for="transactionattachment" class="col-form-label form-control-sm">Transaction attachment</label>
+  	</div>
+  	<div class="col-md-4">
+    	<input type="text" id="transactionattachment" class="form-control form-control-sm" placeholder=" Base58 string">
+  	</div>
+	</div>
+
+	<div class="row g-3 align-items-center">
+  	<div class="col-md-2">
+    	<label for="feeshare" class="col-form-label form-control-sm">Fee sharing percentage</label>
+  	</div>
+  	<div class="col-md-4">
+    	<input type="number" min="1" oninput="validity.valid||(value='');" id="feeshare" class="form-control form-control-sm" placeholder=" any number">
+  	</div>
+	</div>
+
+	<div class="row g-3 align-items-center">
+  	<div class="col-md-2">
+    	<label for="rewardshare" class="col-form-label form-control-sm">Block reward sharing percentage</label>
+  	</div>
+  	<div class="col-md-4">
+    	<input type="number" min="1" oninput="validity.valid||(value='');" id="rewardshare" class="form-control form-control-sm" placeholder=" any number">
+  	</div>
+	</div>
+
+	<div class="row g-3 align-items-center">
+  	<div class="col-md-2">
+    	<label for="blockwindowsize" class="col-form-label form-control-sm">Blocks</label>
+  	</div>
+  	<div class="col-md-4">
+    	<input type="number" min="1" oninput="validity.valid||(value='');" id="blockwindowsize" class="form-control form-control-sm" placeholder=" How many blocks in one run">
+  	</div>
+	</div>
+
+	<div class="row g-3 align-items-start">
+  	<div class="col-md-2">
+    	<label for="nopayoutaddresses" class="col-form-label form-control-sm">No payout addresses</label>
+  	</div>
+  	<div class="col-md-4">
+  		<textarea class="form-control form-control-sm" id="nopayoutaddresses" rows="3" placeholder=" Comma separated list of addresses that will be excluded"></textarea>
+		</div>
+	</div>
+
+	<div class="row g-3 align-items-center">
+  	<div class="col-md-2">
+    	<label for="pay" class="col-form-label form-control-sm">Do payment after collect</label>
+  	</div>
+  	<div class="col-md-4">
+  		<select id="pay" class="form-select form-select-sm" aria-label=".form-select-sm">
+  			<option selected value="no">No</option>
+  			<option value="yes">Yes</option>
+			</select>
+  	</div>
+	</div>
+
+	<div class="row g-3 align-items-center">
+  	<div class="col-md-2">
+    	<label for="stopislast" class="col-form-label form-control-sm">Stop block = Last block</label>
+  	</div>
+  	<div class="col-md-4">
+  		<select id="stopislast" class="form-select form-select-sm" aria-label=".form-select-sm">
+  			<option selected value="no">No</option>
+  			<option value="yes">Yes</option>
+			</select>
+  	</div>
+	</div>
+
+	<br>
+	
+	<div class="row g-3 align-items-center">
+			<div class="col-md-2">
+  				<button type="submit" id="mainpage" onclick="go_main_page(); return false;" class="btn btn-primary btn-sm">main</button>
+  				<button type="submit" id="savesettings" onclick="save_settings(); return false;" class="btn btn-primary btn-sm">save</button>
+  				<button type="submit" id="apiaccess" onclick="api_settings(); return false;" class="btn btn-primary btn-sm">API-access</button>
+  		</div>
+  		<div class="col-md-4">
+  			  <button type="submit" id="loadingbutton" hidden class="btn btn-primary btn-sm">busy....
+  			  	<span class="spinner-border spinner-border-sm"></span>
+  			  </button>
+  		</div>
+
+	</div>
+
+</div>
+
+
+
+
+<center><br><span class="badge text-dark">Brought to you by Plukkieforger</span></center>
+<center><p id="mywallet"></p></center>
+
+<br>
+
+<div class="alert alert-primary" role="alert" >
+  <a class="nav-link" href="http://www.cryptouniverse.nl">Cryptouniverse.nl</a>
+</div>
+
+
+    <!-------------------------------- MY SCRIPTS & FUNCTIONS START ----------------------------------------->
+
+<script>
+
+const env			= 'dev' //set here to test on 'dev' or 'prod' environment
+//---------------------------------------------------------------------------------------------
+const baseapi		= 'https://cz9kuult00.execute-api.eu-north-1.amazonaws.com' //My API gateway
+const stage 		= '/' + env
+const GET_path		= '/collect'
+const defaultwallet = '3P7ajba4wWLXq6t1G8VaoaVqbUb1dDp8fm4'
+const mywebsite		= "Cryptouniverse.nl"
+const mainpage 		= "index.html"
+const apiaccesspage 		= "apikey.html"
+const formfieldarray =	[			//Define array with all formfield id's
+													'servicename',
+													'transactionattachment',
+													'feeshare',
+													'rewardshare',
+													'blockwindowsize',
+													'nopayoutaddresses',
+													'pay',
+													'stopislast'
+												]
+
+//---------------------------------------------------------------------------------------------
+const urlquerystring	= new URLSearchParams(window.location.search)  //Url parameterstring without '?'
+const ww							= urlquerystring.get('wallet')
+let params = '' //used to transfer params between pages
+
+document.getElementById("mywallet").innerHTML = defaultwallet //Set my wallet address as footer when page loads
+
+
+function loading (run='', buttonid) {
+
+	let spinning
+  const id = document.getElementById(buttonid)
+
+  if (id.hidden == true) {
+  	spinning = false
+  } else {
+  	spinning = true
+  }
+
+  if (run == 'start' && spinning == false) {			//Show spinning button
+  	id.hidden = false
+  } else if (run == 'stop' && spinning == true) {	//Hide spinning button
+  	id.hidden = true
+  }
+}
+
+
+
+/* GET request to API gateway
+ * The data returned is dependent on the URL params send
+ * return JSON data received 
+*/
+const get_data = async (urlstring) => {
+
+	const paramstring 	= '?' + urlstring
+	const endpoint 		= baseapi + stage + GET_path
+
+	const options = {
+		method: 'GET',
+		credentials: 'include'
+	}
+	try {
+			loading(run='start', 'loadingbutton')
+    	const response = await fetch(endpoint + paramstring, options)
+    	const data = await response.json()
+    	loading(run='stop', 'loadingbutton')
+    	return data
+  }
+  catch (err) {
+		console.log(err)
+		loading(run='stop', 'loadingbutton')
+  }
+}
+
+
+/* Method to SET all formfield values in the frontend,
+ * based on JSON input received
+ * data is the return of async GET function from API
+ */ 
+const set_formfield_values = async (urlstring) => {
+	const data = await get_data(urlstring)
+
+	if (data.alert)  { alert(data.alert) }
+	//console.log(data.settings)
+
+	if (data.settings) {  //Settings were returned
+		const obj = data.settings
+		for (const key in obj) {
+			let exist = document.getElementById(key) //Check if key exists in form
+			if (exist != null) {
+				exist.value = obj[key]
+			}
+		}
+	}
+}
+
+
+/* Method to go back to main page
+ */
+const go_main_page = function () {
+		form_values_to_url()
+		const url = window.location.href.split('?')[0]  //Get url without params
+		const urlparams = '?settings=transfer&' + params + '&wallet=' + ww
+    window.history.pushState({}, document.title, "/" + mainpage + urlparams)
+    window.location.reload(true) //Reload frontend
+}
+
+
+/* Method to go to API page
+ */
+const api_settings = function () {
+		const url = window.location.href.split('?')[0]  //Get url without params
+		const urlparams = '?settings=transfer' + '&wallet=' + ww
+    window.history.pushState({}, document.title, "/" + apiaccesspage + urlparams)
+    window.location.reload(true) //Reload frontend
+}
+
+
+/* Function that collects all formfield values
+ * and creates an url param string.
+ * formfieldarray has all id names
+ * return ; 'string of json object'
+ */
+const form_values_to_url = function () {
+	let jsonobject = {}
+	params = ''
+	for (const index in formfieldarray) {
+			const v = document.getElementById(formfieldarray[index]).value //The value of the fields
+			if (v != undefined && v != '' && v != null) {
+					if (formfieldarray[index] == 'nopayoutaddresses') { //If variable is no payout addresses
+							const str = v.replace(/\s+/g, '') //Strip all spaces from string
+							params += formfieldarray[index]+'='+str
+							let array = str.split(',')  //Create array from addresses that do not get payed, split on comma
+							jsonobject[formfieldarray[index]] = array
+					}
+					else {  //All other vars
+							jsonobject[formfieldarray[index]] = v //Add to json object
+							params += formfieldarray[index]+'='+v //Add to url paramstring
+					}
+					if (index < formfieldarray.length-1) { params += '&'}
+			}
+	}
+	//console.log(jsonobject)
+	//alert(params)
+	return JSON.stringify(jsonobject)  //return string of JSON object of all settings
+}
+
+
+/* Method to save formfield settings
+ * Settings will be packaged in URL strings
+ * and send to API gateway
+ * API gateway calls lambda which acts on 
+ * url params
+ */
+const save_settings = async () => {
+	const jsonstring = form_values_to_url()  //Receive string of JSON object from formfield values
+	const base64string = btoa(jsonstring)
+	const mystring = 'settings=' + base64string
+	x = set_formfield_values(mystring)
+}
+
+
+
+// MAIN PROGRAM START
+// ============================================================================
+
+set_formfield_values(urlquerystring)		//Receive formfield values from settingsfile stored on S3 
+
+
+
+
+</script>
+
+
+  </body>
+
+</html>
