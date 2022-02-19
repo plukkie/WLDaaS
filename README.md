@@ -5,7 +5,15 @@ Waves Leasing payout Distributer as a Service.
 
 # What is WLDaaS?
 WLDaaS is Waves LPOS distributer as a Service. The scripts are migrated to a Cloud native application.
-It can be operated from a GUI or via API. What does it offer?
+It can be operated from a GUI or via API.  
+
+# How to start using WLDaaS?  
+- surf to [WLDaaS](https://dv9lcw5bcm72z.cloudfront.net)
+- signup
+- start your lease distribution collector run
+- That's it!
+
+# What more does WLDaaS offer?
 - Instant access to collect and pay your leasing distribution
 - Pay with Waveskeeper or via API
 - Get a default HTML report
@@ -16,4 +24,4 @@ It can be operated from a GUI or via API. What does it offer?
 - Get a JSON package for your masstransfer to easily escape from WLDaaS if you don't like it.
 
 All build cloud native in the AWS platform !  
-You can access WLDaaS instant here: https://dv9lcw5bcm72z.cloudfront.net/index.html
+You can access WLDaaS instant here: https://dv9lcw5bcm72z.cloudfront.net
