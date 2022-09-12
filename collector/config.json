@@ -1,15 +1,15 @@
 {
 	"paymentconfig" : {
-		"querynode_api" : "http://144.91.87.72:6869",
+		"querynode_api" : "http://<<IP Waves Node>>:6869",
 		"mrtperblock" : "0",
-		"mail" : "<ADMIN MAIL>",
-		"wld_s3_bucket" : "plukkieforger",
-		"wld_s3_region" : "eu-north-1",
-		"wldaas_s3_trigger_bucket" : "wldaas-email-triggers",
-                "wldaas_s3_payprocessor_trigger_bucket" : "wldaas-payprocessor-trigger",
+		"mail" : "<<admin mail>>",
+		"wld_s3_bucket" : "<<AWS main s3 bucket>>",
+		"wld_s3_region" : "<<AWS region>>",
+		"wldaas_s3_trigger_bucket" : "<<AWS bucket that triggers emails when collector has finished>>",
+                "wldaas_s3_payprocessor_trigger_bucket" : "<<AWS bucket that triggers the payment data json file>>",
 		"wldaas_s3_payprocessor_prefix" : "payprocessor_",
 		"wldaas_s3_email_trigger_prefix" : "collected_",
-		"wldaas_paywallet" : "3P6CwqcnK1wyW5TLzD15n79KbAsqAjQZ2HH",
+		"wldaas_paywallet" : "<<Waves wallet where payments for the WLDaaS service are send>>",
 		"wldaas_s3_lease_reports" : "wldaas-leasing-reports"
 	},
 	"toolbaseconfig" : {
@@ -48,20 +48,21 @@
 	},
 	"collectormail" : {
 		"from_text" : "WLDaaS collector results",
-		"mail_from" : "<NOTIFIER MAIL>",
+		"mail_from" : "<<Notifier email address>>",
 		"subject" : "Waves LPOS distribution results",
-		"admin" : "<ADMIN MAIL>",
+		"admin" : "<<WLDaaS email Admin address>>",
 		"mailtemplate" : "collected_nopayment.mail"
 	},
 	"paymentmail" : {
 		"from_text" : "WLDaaS payment processor",
-		"mail_from" : "<NOTIFIER MAIL>",
+		"mail_from" : "<<Notifier email address>>",
 		"subject" : "Waves leasing payout results",
-		"admin" : "<ADMIN MAIL>",
+		"admin" : "<<WLDaaS email Admin address>>",
 		"mailtemplate" : "collected_payment.mail"
 	},
 	"api_uris" : {
 		"active_leases" : "/leasing/active/{address}",
-		"balances" : "/addresses/balance/details/{address}"
+		"balances" : "/addresses/balance/details/{address}",
+		 "blockchainheight" : "/blocks/height"
 	}
 }

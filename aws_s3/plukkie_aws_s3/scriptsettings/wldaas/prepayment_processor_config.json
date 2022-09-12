@@ -1,0 +1,6 @@
+{
+	"masstx_limit" : "100",
+	"presigned_url_valid_secs" : 86400,
+	"presigned_url_package_download_valid_secs" : 86400,
+	"presigned_url_leasereport_valid_secs" : 2764800
+}

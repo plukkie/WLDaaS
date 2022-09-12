@@ -1,0 +1,287 @@
+<!doctype html>
+
+<html lang="en">
+
+  <head>
+
+  	<!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+
+    <title>Waves LPOS distributer Service - WLDaaS</title>
+
+    <style>
+			.form-check-input:checked {
+    		background-color: darkcyan;
+    		border-color: dark;
+			}
+	</style>
+
+  </head>
+
+  <body>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+
+    
+
+    <!-------------------------------- MAIN APP START ----------------------------------------->
+
+    <div class="bg-dark bg-gradient text-white">
+		<p class="fw-normal text-info  text-center fs-2">WLDaaS</p>
+		<p class="fw-light text-center text-opacity-75 text-info fs-5">API access</p>
+
+		<div class="container">
+			<br>
+			<br>
+
+			<div class="row g-3">
+				<div class="col">
+					<p class="fw-light text-light text-opacity-75 fst-italic fs-6">NOTE<br>Your API key is shown only once. If you loose it you need to create a new one and the old one is invalid.</p>
+				</div>
+			</div>
+
+			<div class="row g-3">
+
+				<label for="apikey" class="col-sm-2 col-form-label">API key</label>
+    			<div class="col">
+      				<input type="text" readonly class="form-control-plaintext text-white" id="apikey" value="">
+    			</div>
+
+			</div>
+
+
+			<div class="row g-3 align-items-center">
+
+				<div class="col-md-5">
+					<br>
+  					<button type="submit" id="mainpage" onclick="go_main_page(); return false;" class="btn btn-info btn-sm text-dark bg-gradient">main</button>
+  					<button type="submit" id="checkapikey" onclick="check_apikey(); return false;" class="btn btn-info btn-sm text-dark bg-gradient">check api key
+    					<span class="spinner-border spinner-border-sm" hidden></span>
+    				</button>
+  					<button type="submit" id="createapikey" onclick="create_apikey(); return false;" class="btn btn-info btn-sm text-dark bg-gradient">create api key
+    					<span class="spinner-border spinner-border-sm" hidden></span>
+    				</button>
+    				<button type="submit" id="deleteapikey" onclick="delete_apikey(); return false;" class="btn btn-info btn-sm text-dark bg-gradient">delete api key
+    					<span class="spinner-border spinner-border-sm" hidden></span>
+    				</button>
+  				</div>
+
+  				<div class="col-md-2">
+  					<br>
+  			  		<button type="submit" id="loadingbutton" hidden class="btn btn-info btn-sm text-dark bg-gradient">busy....
+  			  			<span class="spinner-border spinner-border-sm"></span>
+  			  		</button>
+  				</div>
+
+			</div>
+			<br>
+
+		</div>
+
+		<div class=" bg-gradient text-center">
+			<div class="fw-normal text-info text-opacity-75 small">Brought to you by Waves node <strong>Plukkieforger</strong></div>
+			<div class="text-info text-opacity-75">'<class id="mywallet"></class>'</div>
+			<p><a class="nav-link text-opacity-75" href="http://www.cryptouniverse.nl">Cryptouniverse.nl</a></p>
+		</div>
+
+	</div>
+
+
+    <!-------------------------------- MY SCRIPTS & FUNCTIONS START ----------------------------------------->
+
+	<script>
+
+		const env			= 'dev' //set here to test on 'dev' or 'prod' environment
+		//---------------------------------------------------------------------------------------------
+		const baseapi		= 'https://cz9kuult00.execute-api.eu-north-1.amazonaws.com' //My API gateway
+		const stage 		= '/' + env
+		const GET_path		= '/collect'
+		const account_path	= '/account'
+		const login			= '/login'
+		const defaultwallet = '3P7ajba4wWLXq6t1G8VaoaVqbUb1dDp8fm4'
+		const mywebsite		= "Cryptouniverse.nl"
+		const mainpage 		= "index.html"
+		const formfieldarray =	[			//Define array with all formfield id's
+													'servicename',
+													'transactionattachment',
+													'feeshare',
+													'rewardshare',
+													'blockwindowsize',
+													'nopayoutaddresses',
+													'pay',
+													'stopislast'
+								]
+
+		//---------------------------------------------------------------------------------------------
+		const urlquerystring	= new URLSearchParams(window.location.search)  //Url parameterstring without '?'
+		const ww							= urlquerystring.get('wallet')
+		let params = '' //used to transfer params between pages
+
+		document.getElementById("mywallet").innerHTML = defaultwallet //Set my wallet address as footer when page loads
+
+
+		function loading (run='', buttonid) {
+
+			let spinning
+  			const id = document.getElementById(buttonid)
+
+  			if (id.hidden == true) {
+  				spinning = false
+  			} else {
+  				spinning = true
+  			}
+
+  			if (run == 'start' && spinning == false) {			//Show spinning button
+  				id.hidden = false
+  			} else if (run == 'stop' && spinning == true) {	//Hide spinning button
+  				id.hidden = true
+  			}
+		}
+
+
+
+		/* POST request to API gateway
+		 * params:
+		 * - urlstring : url parameter string i.e. a=true&b=mystring
+		 */
+		const post_call = async (jsonbody) => {
+			const endpoint 		= baseapi + stage + account_path + login
+			const options		= { 
+									method: 'POST',
+									credentials: 'include',
+									mode: 'cors',
+									headers: {
+												"Content-type": "application/json; charset=UTF-8"
+											 },
+									body: JSON.stringify(jsonbody)
+			}
+			try {
+				loading(run='start', 'loadingbutton')
+    			const response = await fetch(endpoint, options)
+    			const data = await response.json()
+    			loading(run='stop', 'loadingbutton')
+    			return data
+  			}
+  			catch (err) {
+				console.log(err)
+				loading(run='stop', 'loadingbutton')
+  			}
+		}
+
+
+		/* Method to go back to main page
+ 		 */
+		const go_main_page = function () {
+			let urlparams = '?settings=transfer'
+			const url = window.location.href.split('?')[0]  //Get url without params
+			if (ww != undefined && ww != null && ww != '') {
+				urlparams += '&wallet=' + ww
+			}
+    		window.history.pushState({}, document.title, "/" + mainpage + urlparams)
+    		window.location.reload(true) //Reload frontend
+		}
+
+		/* Check if an API key is already created
+		 * If true, print return text
+		 * If false, print return text
+		 */ 
+		const check_apikey = async () => {
+			const jsonbody = { "check_apikey" : "true" }
+			const response = await post_call(jsonbody)
+
+			if (response.hasOwnProperty('browserreload') == true) {
+					if (response.browserreload == true) { //No cookie present, reload to login page
+						if (response.alert)  { alert(response.alert) }
+						window.history.pushState({}, document.title, "/" + mainpage)
+    					window.location.reload(true) //Reload frontend
+					}
+			} else if (response.hasOwnProperty('inlinetext') == true) {
+					const value = response.inlinetext
+					document.getElementById("apikey").value = value
+			}
+
+		}
+
+
+		/* Create API key request
+		 * Authentication needs to be done on lambda with the web cookie
+		 * If OK, nn API key is generated and returned in json data
+		 * print it inline in the frontend
+		 */
+		const create_apikey = async () => {
+
+			const msg = 'Are you sure to create an API key?\n==================================\n' +
+						' - if an API key was already created it will be overwritten\n' +
+						'   with the new key. The current key becomes invalid.\n' +
+						' - keep your key safe. Anyone with the key\n' +
+						'   can messup your sessions. Payments are\n' +
+						'   not at risk. You stay in control to confirm\n' +
+						'   transactions to your leasers.'
+
+			if (confirm(msg)) { //Service request confirmed
+		 
+		 		const jsonbody = { "create_apikey" : "true" }
+				const response = await post_call(jsonbody)
+
+				if (response.hasOwnProperty('browserreload') == true) {
+					if (response.browserreload == true) { //No cookie present, reload to login page
+						if (response.alert)  { alert(response.alert) }
+						window.history.pushState({}, document.title, "/" + mainpage)
+    					window.location.reload(true) //Reload frontend
+					}
+				} else if (response.hasOwnProperty('apikey') == true) {
+					if (response.alert)  { alert(response.alert) }
+					const apikey = response.apikey
+					document.getElementById("apikey").value = apikey
+				}
+
+			} else { //Payment Cancelled
+				console.log('API key creation cancelled')
+			}	
+		}
+
+
+		/* DELETE API key request
+		 * Authentication needs to be done on lambda with the web cookie
+		 * If OK, nn API key is deleted
+		 * print the result inline in the frontend
+		 */
+		const delete_apikey = async () => {
+
+			const msg = 'Are you sure to delete the API key?\n==================================\n' +
+						' - API calls with this key will be instantly impossible.\n'
+
+			if (confirm(msg)) { //DELETE request confirmed
+		 
+		 		const jsonbody = { "delete_apikey" : "true" }
+				const response = await post_call(jsonbody)
+
+				if (response.hasOwnProperty('browserreload') == true) {
+					if (response.browserreload == true) { //No cookie present, reload to login page
+						if (response.alert)  { alert(response.alert) }
+						window.history.pushState({}, document.title, "/" + mainpage)
+    					window.location.reload(true) //Reload frontend
+					}
+				} else if (response.hasOwnProperty('inlinetext') == true) {
+					if (response.alert)  { alert(response.alert) }
+					const value = response.inlinetext
+					document.getElementById("apikey").value = value
+				}
+
+			} else { //Payment Cancelled
+				console.log('API key deletion cancelled')
+			}	
+		}
+
+
+
+	</script>
+  </body>
+</html>

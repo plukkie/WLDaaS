@@ -9,3 +9,8 @@ LICENSE
 .vscode
 appng.run
 data
+build.sh
+get-ecr-token.sh
+ecr-upload.sh
+appng.old
+sanitized.txt

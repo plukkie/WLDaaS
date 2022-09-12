@@ -1,0 +1,40 @@
+{
+	"timers" : {
+		"signup_expiration_hrs" : "1",
+		"account_unused_expiration_hrs" : "4380",
+		"webtoken_expiration_hrs" : "2",
+		"passwordresetexpiration" : "2",
+		"start_freeruns" : "5"
+	},
+	"mail_settings" : {
+		"server" : {
+			"name" : "smtp.gmail.com",
+			"port" : "465"
+		},
+		"account" : {
+			"username" : "plukkie.notification@gmail.com",
+			"password" : ""
+		},
+		"signup_mail" : {
+			"from_text" : "Signup Verification WLDaaS",
+			"mail_from" : "plukkie.notification@gmail.com",
+			"subject" : "Please confirm your registration",
+			"admin" : "plukkieforger@gmail.com",
+			"activationlink" : "https://dv9lcw5bcm72z.cloudfront.net"
+		},
+		"password_reset_mail" : {
+			"from_text" : "Password reset confirmation WLDaaS",
+			"mail_from" : "plukkie.notification@gmail.com",
+			"subject" : "Please confirm your password reset",
+			"admin" : "plukkieforger@gmail.com",
+			"frontendlink" : "https://dv9lcw5bcm72z.cloudfront.net/pwdchange.html",
+			"resetlinktext" : "Please use this link to confirm your password reset",
+			"mailtemplate": "password_reset.mail"
+		}
+	},
+	"acao" : "https://dv9lcw5bcm72z.cloudfront.net",
+	"acao_" : "http://wldaas.s3-website.eu-north-1.amazonaws.com",
+	"cookiedomain_" : ".cloudfront.net",
+	"cookiedomain" : ".amazonaws.com"
+}
+

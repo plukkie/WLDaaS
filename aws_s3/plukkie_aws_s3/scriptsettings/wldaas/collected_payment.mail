@@ -1,0 +1,135 @@
+From: <from_text>
+To: <receiver>
+MIME-Version: 1.0
+Content-type: text/html
+Subject: <subject>
+
+<!DOCTYPE html>
+<html>
+<style>
+table, th, td {
+  border:1px solid black;
+}
+
+
+</style>
+<body>
+
+<h3>Collector results for service <servicename></h3>
+
+
+<table align="left" style="width:100%">
+  <tr>
+    <td>
+        <wavespaylink>
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+        <leasereportlink>
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+        <wavescollectorresultsbundlelink>
+    </td>
+  </tr>
+
+</table>
+
+<h3><hr width="100%"></h3>
+
+<table align="left" style="width:100%">
+  <tr>
+    <th align="left">Description</th>
+    <th align="left">Result</th>
+  </tr>
+  <tr>
+    <td>Wallet</td>
+    <td><myleasewallet></td>
+  </tr>
+  <tr>
+    <td>Session type</td>
+    <td><sessiondescription></td>
+  </tr>
+  <tr>
+    <td>Generating node balance</td>
+    <td><generatingbalance> Waves</td>
+  </tr>
+  <tr>
+    <td>Total leases</td>
+    <td><activeleases></td>
+  </tr>
+  <tr>
+    <td>Lease changes (+adds/-deducts)</td>
+    <td><leaseschange></td>
+  </tr>
+  <tr>
+    <td>Total unique leasers</td>
+    <td><uniqueleasersend></td>
+  </tr>
+  <tr>
+    <td>Started at block</td>
+    <td><payblock></td>
+  </tr>
+  <tr>
+    <td>Finished at block</td>
+    <td><stopblock></td>
+  </tr>
+  <tr>
+    <td>Total blocks forged</td>
+    <td><myblocks></td>
+  </tr>
+  <tr>
+    <td>Fees / Blockrewards sharing %</td>
+    <td><feeshare>% / <rewardshare>%</td>
+  </tr>
+
+  <tr>
+    <td>Waves fee, rewards & profits stats:
+        <ul>
+                <li>fees & rewards collected</li>
+                <li>fees & rewards to share</li>
+                <li>amount marked as 'no payout'</li>
+                <li>amount marked as 'payout'</li>
+                <li>node profit</li>
+                <li>effective node profit</li>
+        </ul>
+    </td>
+    <td>
+        <br><totalfees> Waves
+        <br><feesshared> Waves
+        <br><nopayaddressamount> Waves
+        <br><payaddressamount> Waves
+        <br><nodeprofit> Waves
+        <br><b><effectivenodeprofit> Waves</b>
+    </td>
+  </tr>
+  <tr>
+    <td>Ref. WLDaaS session Id</td>
+    <td><sessionid></td>
+  </tr>
+  <tr>
+    <td>Ref. WLDaaS payment Id</td>
+    <td><payrefid></td>
+  </tr>
+  <tr>
+    <td>Ref. Waves transaction Id</td>
+    <td><mywavespaymenttxid></td>
+  </tr>
+  <tr><br></tr>
+</table>
+
+
+<h4><p><span style="font-weight:normal">
+In case of questions send an email to <admin><br>
+Thank you for using <a href=<frontendlink>>the WLDaaS service</a>
+</span></p>
+</h4>
+
+</body>
+</html>
+
+

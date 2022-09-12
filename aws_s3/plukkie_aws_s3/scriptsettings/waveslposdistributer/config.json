@@ -1,0 +1,68 @@
+{
+	"paymentconfig" : {
+		"querynode_api" : "http://144.91.87.72:6869",
+		"mrtperblock" : "0",
+		"mail" : "plukkie@gmail.com",
+		"wld_s3_bucket" : "plukkieforger",
+		"wld_s3_region" : "eu-north-1",
+		"wldaas_s3_trigger_bucket" : "wldaas-email-triggers",
+                "wldaas_s3_payprocessor_trigger_bucket" : "wldaas-payprocessor-trigger",
+		"wldaas_s3_payprocessor_prefix" : "payprocessor_",
+		"wldaas_s3_email_trigger_prefix" : "collected_",
+		"wldaas_paywallet" : "3P6CwqcnK1wyW5TLzD15n79KbAsqAjQZ2HH",
+		"wldaas_s3_lease_reports" : "wldaas-leasing-reports"
+	},
+	"toolbaseconfig" : {
+		"batchinfofile" : "batchinfo.json",
+		"s3_ecs_queue" : "ecs-queue/",
+		"lastblockleasersfile" : "lastblockleasers.json",
+		"collectorfilesprefix" : "collector_",
+		"datadir" : "data/",
+		"txbasefee" : "100000",
+ 		"txscfee" : "500000",
+ 		"txfee" : "100000",
+		"node_connect_retries" : "45",
+		"node_connect_retry_delay_msecs" : "20000",
+		"node_get_collect_delay" : "500",
+		"one_block_collect_time_mins" : "0.00025221",
+		"open_request_client_sockets" : "5",
+		"collect_batch_size" : "99",
+		"clikeys" : [	"myleasewallet",
+				"startblock" ,
+				"stopblock",
+				"payblock",
+				"blocks",
+				"reset",
+				"force",
+				"servicename",
+				"feeshare",
+				"rewardshare",
+				"nopayoutaddresses",
+				"dopayments",
+				"email",
+				"sessionid",
+				"mywavespaymenttxid",
+				"transactionattachment",
+				"payrefid",
+				"s3_wallet_folder" ]
+	},
+	"collectormail" : {
+		"from_text" : "WLDaaS collector results",
+		"mail_from" : "plukkie.notification@gmail.com",
+		"subject" : "Waves LPOS distribution results",
+		"admin" : "plukkieforger@gmail.com",
+		"mailtemplate" : "collected_nopayment.mail"
+	},
+	"paymentmail" : {
+		"from_text" : "WLDaaS payment processor",
+		"mail_from" : "plukkie.notification@gmail.com",
+		"subject" : "Waves leasing payout results",
+		"admin" : "plukkieforger@gmail.com",
+		"mailtemplate" : "collected_payment.mail"
+	},
+	"api_uris" : {
+		"active_leases" : "/leasing/active/{address}",
+		"balances" : "/addresses/balance/details/{address}",
+		 "blockchainheight" : "/blocks/height"
+	}
+}

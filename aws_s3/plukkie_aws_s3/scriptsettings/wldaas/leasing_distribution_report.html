@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+	<div class="container">
+		<h3>Waves leasing payout report  [ <*date*> ]</h3>
+		<h5>
+			<ul>
+				<li>Service : <*servicename*></li>
+				<li>LPOS address : <*myleasewallet*></li>
+				<li>Block range  : <*payblock*> - <*stopblock*></li>
+				<li>Blocks scanned : <*blocksscanned*></li>
+				<li>Startblock date : <*startblocktime*></li>
+				<li>Stopblock date : <*stopblocktime*></li>
+				<li>Fee sharing  : <*feeshare*>%</li>
+				<li>Block reward sharing : <*rewardshare*>%</li>
+				<li>Forged blocks : <*myblocks*></li>
+				<li>Active leases : <*activeleases*></li>
+				<li>Unique leasers : <*uniqueleasersend*></li>
+				<li>Generating balance : <*generatingbalance*></li>
+				<li>Ref.id : <*sessionid*></li>
+				<li>Contact : <*email*></li>
+			</ul>
+		</h5>
+
+		<table class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th>Recipient address</th> <th>Waves</th>
+				</tr>
+			</thead>
+			<tbody>
+				<*distributionstats*>
+				<tr><td><b>Total amount shared</b></td> <td><b><*feesshared*></b></td></tr>
+				<tr><td><b>No payout amount ( <*nopayaddresscnt*> recipients)</b></td> <td><b><*nopayaddressamount*></b></td></tr>
+			</tbody>
+		</table>
+	</div>
+
+</body>
+
+</html>

@@ -1,2 +1,8 @@
 node_modules/
 upload-wldaas-frontend.sh
+get-ecr-token.sh
+ecr-upload.sh
+config.json.running.on.aws
+build.sh
+appng.old
+aws_lambda/*.yaml

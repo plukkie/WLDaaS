@@ -1,0 +1,11 @@
+{
+	"server" : {
+		"name" : "smtp.gmail.com",
+		"port" : "465"
+	},
+	"account" : {
+		"username" : "plukkie.notification@gmail.com",
+		"password" : ""
+	},
+	"frontendlink" : "https://dv9lcw5bcm72z.cloudfront.net"
+}

@@ -1,0 +1,23 @@
+{
+   "containername" : "waves-appng",
+   "cluster": "vpc-fargate-ecs",
+   "taskDefinition": "waves-collector-task:10",
+   "launchType" : "FARGATE",
+   "count" : "1",
+   "platformVersion" : "LATEST",
+   "networkConfiguration" : {
+	   "awsvpcConfiguration" : {
+		"subnets": [ "subnet-023b2aff28c3d5e9b", "subnet-0908ad12b456e5402" ],
+		"securityGroups" : [ "sg-0aed41a49c259db77" ],
+		"assignPublicIp": "ENABLED"
+	   }
+    },
+    "overrides" : {
+	    "containerOverrides" : [
+		    {
+			    "name" : "waves-appng",
+			    "command" : [ "myleasewallet=" ]
+		    }
+	    ]
+    }
+}

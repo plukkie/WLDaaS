@@ -13,8 +13,8 @@
 //////////////////////////////////////////////////
 
 const configfile = 'config.json' //json file with appng.js settings
-const s3_config_bucket = '<S3 BUCKET>' //aws s3 bucket where configfile is stored
-const s3_settings_path = 'scriptsettings/waveslposdistributer/' //sub path for configfile object
+const s3_config_bucket = '<<AWS s3 bucket>>' //aws s3 bucket where configfile is stored
+const s3_settings_path = '<<AWS s3 subpath>>' //sub path for configfile object
 const s3_config_object = s3_settings_path + configfile //full aws s3 object
 const appngrunfile = 'appng.run' 
 const nopaytriggerfileprefix	= 'collected_'
@@ -59,7 +59,7 @@ var balancesuri
 var datadir
 var batchinfofile
 var s3_batchinfofile
-//var payqueuefile
+var payqueuefile
 var generatingbalance
 var batchinfo = {}
 var mybatchdata = {}
@@ -321,19 +321,19 @@ function get_api_json_request (url) {
  * @returns {Array} all aliases for address
  */
 function getAllAlias () {
-
-	var AliasArr = [];
-	var Aliases = JSON.parse(request('GET', config.node + '/alias/by-address/' + config.address, {
-		'headers': {
-                	'Connection': 'keep-alive'
+						var AliasArr = [];
+            var Aliases = JSON.parse(request('GET', config.node + '/alias/by-address/' + config.address, {
+                'headers': {
+                    'Connection': 'keep-alive'
                 }
-	}).getBody('utf8'));
+            }).getBody('utf8'));
 
-        Aliases.forEach(function(alias) {
-		AliasArr.push(alias);
-		console.log(alias);
+        Aliases.forEach(function(alias)
+        {
+						 AliasArr.push(alias);
+						 console.log(alias);
         });
-	return AliasArr;
+    return AliasArr;
 }
 
 
@@ -344,9 +344,9 @@ function getAllAlias () {
   * masspayment tool.
  */
 function start () {
-	console.log('get aliases');
-	myAliases = getAllAlias();
-	console.log('Retreive blocks and collecting lease info and transaction fees...');
+  console.log('get aliases');
+  myAliases = getAllAlias();
+    console.log('Retreive blocks and collecting lease info and transaction fees...');
 
 	var blocks = getAllBlocks(); //array with all blocks and blockdata of current batch
 	blocks.then ( function (result) {
@@ -360,7 +360,7 @@ function start () {
 
 		console.log('preparing payments...');
 
-    		myForgedBlocks.forEach(function(block) { //Cycle through all blocks that my node forged
+    		myForgedBlocks.forEach(function(block) {
 
         		if (block.height >= config.startBlockHeight && block.height <= config.endBlock) {
 
@@ -444,10 +444,7 @@ function get_blocks_promise (msg, url, connectionpool)	{
 }
 
 
-/*
- * This file is written to S3 bucket
- * It triggers a lambda function
- */
+
 function write_end_result_trigger_file() {
 
 	let s3object
@@ -501,6 +498,7 @@ function write_end_result_trigger_file() {
 	s3body['mailheaders']['receivers'] = [ accountmail ]
 	s3body['mailheaders']['receiver'] = accountmail
 
+        //upload_s3_object_promise (wldaas_s3_trigger_bucket, s3object, s3body, 'json').then (function (result) { //Upload file to S3
         upload_s3_object_promise (s3bucket, s3object, s3body, 'json').then (function (result) { //Upload file to S3
 
                 console.log(' - End result written to s3 (triggerfile):              / ' + s3bucket + ' / ' + s3object);
@@ -581,7 +579,7 @@ var get_type16_invoke_leases = function (type16txs) {
 
 
 /*
- * Method that returns all relevant blocks in batches of collect_batch_size (from json conf file)
+ * Method that returns all relevant blocks in batches of 100.
  * One batch is scanned for lease activations, lease cancels and if my node forged the block
  * My forged blocks are pushed to array myforgedBlocks[] for later usage and waves fees
  * are collected for transactions that are needed for lease sharing.
@@ -589,16 +587,17 @@ var get_type16_invoke_leases = function (type16txs) {
  * New leases are added to array myLeases[], with block height and transaction data
  * Cancelled leases are added to array myCanceledLeases[], with block height and transaction data
  *
- * There is a queue created with timeouts for every batch api request
- *
- * @returns nothing, the {Array} is global var updated with all relevant blocks
+ * @returns {Array} all relevant blocks
  */
+
 var getAllBlocks = function() { //Promise
 
 	// leases have been resetted in block 462000, therefore, this is the first relevant block to be considered
 	var cnt = 0; //batch counter, after a batch request resolves, increase counter
 	var delaycounter = 0 //Used for pause between requests & its the While loop counter
 	let lastblockarray = []
+	//var checkprevblock = false;
+	//var keeplastblock = {};
 
 	const connectionpool = new http.Agent()
         connectionpool.maxSockets = Number(request_open_sockets) //Maximum open sockets to avoid client resource depletion (on container)
@@ -783,6 +782,12 @@ var getAllBlocks = function() { //Promise
 }; //END function getAllBlocks
 
 
+
+
+
+
+
+
 /**
  * Method that scans the block for lease activations and cancellations
  * It adds some data to the block and pushes it to relevant block array
@@ -851,7 +856,7 @@ var catch_relevant_blocks = function (startbl, index, block, myblock, wavesFees,
 		let prevblock
 
 		if (index === 0 || block.height == startbl) { //Check fees from old copy, that was kept from previous cycle of blocks
-
+			//prevblock = keeplastblock;
 			prevblock = lastblockarray.find(o => o.height == previousblockheight) //get previous block from this batch
 			console.log('Get block fees from previous block in previous batch [block ' + previousblockheight + ']')
 			//console.log(prevblock)
@@ -911,38 +916,43 @@ var catch_relevant_blocks = function (startbl, index, block, myblock, wavesFees,
  */
 var distribute = function(activeLeases, amountTotalLeased, block) {
 
-	var fee = block.wavesFees; //total waves fee amount + blockreward with sharing % from configfile applied
-	
-	if ( activeLeases.length != 0 ) {
-		
-		for (var address in activeLeases) {
-			if ( nofeearray.indexOf(address) == -1 ) {	// leaseaddress is not marked as 'no pay address'
-				var share = (activeLeases[address] / amountTotalLeased); //what is the share ratio for this address
-				var payout = true;
-			} else {					//this address will not get payed
-				var share = (activeLeases[address] / amountTotalLeased); //what is the share ratio for this address
-				var payout = false;
-	  		}
+    var fee = block.wavesFees; //total waves fee amount + blockreward with sharing % from configfile applied
 
-        		var amount = fee * share; //The Waves amount per address according ratio
-        		var assetamounts = [];
-        		var amountMRT = share * config.distributableMrtPerBlock; //How many Mrt will the address get
 
-       			if (address in payments) { //Address already in array, add to amount
-       				payments[address] += amount //How many Waves fees leaser gets
-       				mrt[address] += amountMRT; //How many Mrt leaser gets
-			} else { //Address not yet in array, add entry
-				payments[address] = amount; //How many Waves fees leaser gets
-				mrt[address] = amountMRT; //How many Mrt leaser gets
-			}
-	
-			if ( payout == true ) {
-        			console.log(address + ' will receive ' + amount + ' of ' + fee + ' Waves and ' + amountMRT + ' MRT for block: ' + block.height + ' share: ' + share);
-			} else if ( payout == false ) {
-				console.log(address + ' marked as NOPAYOUT: ' + amount + ' of(' + fee + ') and ' + amountMRT + ' MRT for block: ' + block.height + ' share: ' + share);
-			}
-    		}
+    if ( activeLeases.length != 0 ) {
+
+    for (var address in activeLeases) {
+
+	if ( nofeearray.indexOf(address) == -1 ) {	// leaseaddress is not marked as 'no pay address'
+		var share = (activeLeases[address] / amountTotalLeased); //what is the share ratio for this address
+		var payout = true;
+	} else {					//this address will not get payed
+		var share = (activeLeases[address] / amountTotalLeased); //what is the share ratio for this address
+		var payout = false;
+	  }
+
+        var amount = fee * share; //The Waves amount per address according ratio
+
+        var assetamounts = [];
+
+
+        var amountMRT = share * config.distributableMrtPerBlock; //How many Mrt will the address get
+
+       	if (address in payments) { //Address already in array, add to amount
+       		payments[address] += amount //How many Waves fees leaser gets
+       		mrt[address] += amountMRT; //How many Mrt leaser gets
+	} else { //Address not yet in array, add entry
+		payments[address] = amount; //How many Waves fees leaser gets
+		mrt[address] = amountMRT; //How many Mrt leaser gets
 	}
+
+	if ( payout == true ) {
+        	console.log(address + ' will receive ' + amount + ' of ' + fee + ' Waves and ' + amountMRT + ' MRT for block: ' + block.height + ' share: ' + share);
+	} else if ( payout == false ) {
+		console.log(address + ' marked as NOPAYOUT: ' + amount + ' of(' + fee + ') and ' + amountMRT + ' MRT for block: ' + block.height + ' share: ' + share);
+	}
+    }
+    }
 };
 
 
@@ -955,93 +965,157 @@ var pay = function() {
 	let s3bucket = wld_s3_bucket
 	let s3object;
 	let s3body;
-    	var transactions = [];
-    	var totalMRT = 0;
-    	var totalfees =0;
-    	var nopaywaves = 0
-    	var nopaymrt = 0
 
-    	for (var address in payments) { //Start for all addresses in payments array
-        	
-		var payment = (payments[address] / Math.pow(10, 8));
+    var transactions = [];
+    var totalMRT = 0;
+    var totalfees =0;
+    var nopaywaves = 0
+    var nopaymrt = 0
 
-		if ( nofeearray.indexOf(address) == -1 ) { //This address will get payed (it's not found in nopay array)
+    var html = "";
 
-			payout = true
-			wavespayaddresscnt ++
-			
-			console.log(address + ' will receive ' + parseFloat(payment).toFixed(8) + ' Waves and ' + parseFloat(mrt[address]).toFixed(2) + ' MRT in total!')
+    var html = "<!DOCTYPE html>" +
+"<html lang=\"en\">" +
+"<head>" +
+"  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" +
+"  <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\">" +
+"  <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js\"></script>" +
+"  <script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js\"></script>" +
+"</head>" +
+"<body>" +
 
-			//send Waves fee
-			if (Number(Math.round(payments[address])) > 0) {
-				transactions.push({
-					"amount": Number(Math.round(payments[address])),
-					"fee": config.feeAmount,
-					"sender": config.address,
-					"attachment": config.paymentAttachment,
-					"recipient": address,
-					"pay" : "yes"
-				});
-				wavespayaddressamount += Number(Math.round(payments[address]))
-			}
+"<div class=\"container\">" +
+"  <h3>Fees between blocks " + config.startBlockHeight + " - " + config.endBlock + ", Payout #" + config.paymentid + ", (Share Tx fees " + config.percentageOfFeesToDistribute + "% / Blockreward " + config.percentageOfBlockrewardToDistribute + "%)</h3>" +
+"  <h4>(LPOS address: " + config.address + ")</h4>" +
+"  <h5>[ " + date + " ]: Hi all, again a short update of the fee's earned by the waves service '" + servicename + "'. Greetings!</h5> " +
+"  <h5>You can always contact me by <a href=\"mailto:" + mailto + "\">E-mail</a></h5>" +
+"  <h5>Blocks forged: " + BlockCount + "</h5>" +
+"  <table class=\"table table-striped table-hover\">" +
+"    <thead> " +
+"      <tr>" +
+"        <th>Address</th>" +
+"        <th>Waves</th>" +
+"        <th>MRT</th>" +
 
-			//send MRT
-			if (Number(Math.round(mrt[address] * Math.pow(10, 2))) > 0) {
-				transactions.push({
-					"amount": Number(Math.round(mrt[address] * Math.pow(10, 2))),
-					"fee": config.feeAmount,
-					"assetId": "4uK8i4ThRGbehENwa6MxyLtxAjAo1Rj9fduborGExarC",
-					"sender": config.address,
-					"attachment": config.paymentAttachment,
-					"recipient": address,
-					"pay" : "yes"
-				});
-			}
+"      </tr>" +
+"    </thead>" +
+"    <tbody>";
 
-		} else { //NOPAYOUT address, will not get payed
+    for (var address in payments) { //Start for all addresses in payments array
+        var payment = (payments[address] / Math.pow(10, 8));
 
-			payout = false
-			wavesnopayaddresscnt ++
+	if ( nofeearray.indexOf(address) == -1 ) { //This address will get payed (it's not found in nopay array)
 
-			console.log(address + ' marked as NOPAYOUT, will not receive ' + parseFloat(payment).toFixed(8) + ' and ' + parseFloat(mrt[address]).toFixed(2) + ' MRT!')
+		payout = true
+		wavespayaddresscnt ++
 
-			//send Waves fee
-                	if (Number(Math.round(payments[address])) > 0) {
-				nopaywaves += payments[address]
-                        	transactions.push({
-                                	"amount": Number(Math.round(payments[address])),
-                                	"fee": config.feeAmount,
-                                	"sender": config.address,
-                                	"attachment": config.paymentAttachment,
-                                	"recipient": address,
-					"pay" : "no"
-                        	});
-                		wavesnopayaddressamount += Number(Math.round(payments[address]))
-                	}
+		console.log(address + ' will receive ' + parseFloat(payment).toFixed(8) + ' Waves and ' + parseFloat(mrt[address]).toFixed(2) + ' MRT in total!')
 
-                	//send MRT
-                	if (Number(Math.round(mrt[address] * Math.pow(10, 2))) > 0) {
-				nopaymrt += mrt[address]
-                        	transactions.push({
-                                	"amount": Number(Math.round(mrt[address] * Math.pow(10, 2))),
-                                	"fee": config.feeAmount,
-                                	"assetId": "4uK8i4ThRGbehENwa6MxyLtxAjAo1Rj9fduborGExarC",
-                                	"sender": config.address,
-                                	"attachment": config.paymentAttachment,
-                                	"recipient": address,
-					"pay" : "no"
-                        	});
-                	}
-	  	}
+		//send Waves fee
+		if (Number(Math.round(payments[address])) > 0) {
+			transactions.push({
+				"amount": Number(Math.round(payments[address])),
+				"fee": config.feeAmount,
+				//"feeAssetId": config.assetFeeId,
+				"sender": config.address,
+				"attachment": config.paymentAttachment,
+				"recipient": address,
+				"pay" : "yes"
+			});
+			wavespayaddressamount += Number(Math.round(payments[address]))
+		}
 
-        	totalMRT += mrt[address];
-        	totalfees += payments[address];
+		//send MRT
+		if (Number(Math.round(mrt[address] * Math.pow(10, 2))) > 0) {
+			transactions.push({
+				"amount": Number(Math.round(mrt[address] * Math.pow(10, 2))),
+				"fee": config.feeAmount,
+				//"feeAssetId": config.assetFeeId,
+				"assetId": "4uK8i4ThRGbehENwa6MxyLtxAjAo1Rj9fduborGExarC",
+				"sender": config.address,
+				"attachment": config.paymentAttachment,
+				"recipient": address,
+				"pay" : "yes"
+			});
+		}
 
-    	}	//End for all addresses in payments array
+	} else { //NOPAYOUT address, will not get payed
 
-	console.log("total Waves shared (fees + blockrewards): " + (totalfees/100000000).toFixed(8) + " (" + config.percentageOfFeesToDistribute + "%/" + config.percentageOfBlockrewardToDistribute + "%) + total MRT: " + totalMRT );
+		payout = false
+		wavesnopayaddresscnt ++
 
-	var paymentfile = config.filename + sessionid + ".json";
+		console.log(address + ' marked as NOPAYOUT, will not receive ' + parseFloat(payment).toFixed(8) + ' and ' + parseFloat(mrt[address]).toFixed(2) + ' MRT!')
+
+		//send Waves fee
+                if (Number(Math.round(payments[address])) > 0) {
+			nopaywaves += payments[address]
+                        transactions.push({
+                                "amount": Number(Math.round(payments[address])),
+                                "fee": config.feeAmount,
+                                //"feeAssetId": config.assetFeeId,
+                                "sender": config.address,
+                                "attachment": config.paymentAttachment,
+                                "recipient": address,
+				"pay" : "no"
+                        });
+                	wavesnopayaddressamount += Number(Math.round(payments[address]))
+                }
+
+                //send MRT
+                if (Number(Math.round(mrt[address] * Math.pow(10, 2))) > 0) {
+			nopaymrt += mrt[address]
+                        transactions.push({
+                                "amount": Number(Math.round(mrt[address] * Math.pow(10, 2))),
+                                "fee": config.feeAmount,
+                                //"feeAssetId": config.assetFeeId,
+                                "assetId": "4uK8i4ThRGbehENwa6MxyLtxAjAo1Rj9fduborGExarC",
+                                "sender": config.address,
+                                "attachment": config.paymentAttachment,
+                                "recipient": address,
+				"pay" : "no"
+                        });
+                }
+
+	  }
+
+        totalMRT += mrt[address];
+        totalfees += payments[address];
+
+
+        html += "<tr><td>" + address + "</td><td>" + 							 	//address column
+				((payments[address]/100000000).toFixed(8)) + "</td><td>" + 	//Waves fee's
+				mrt[address].toFixed(2) + "</td><td>"                      //MRT
+	
+	if (payout == false) { html += "* NO PAYOUT *" }
+	
+	html += "\r\n";
+
+    }	//End for all addresses in payments array
+
+    html += "<tr><td><b>Total amount</b></td><td><b>" + ((totalfees/100000000).toFixed(8)) +
+		 "</b></td><td><b>" + totalMRT.toFixed(2) + "</b></td><td><b>" +
+			"\r\n";
+
+    if (nopaywaves != 0) { //Write no payout row
+    	html += "<tr><td><b>No Payout amount (" + wavesnopayaddresscnt + " recipients)</b></td><td><b>" + ((nopaywaves/100000000).toFixed(8)) +
+		"</b></td><td><b>" + nopaymrt.toFixed(2) + "</b></td><td><b>" +
+			"\r\n";
+    }
+
+    html += "</tbody>" +
+"  </table>" +
+"</div>" +
+
+"</body>" +
+"</html>";
+
+
+    console.log("total Waves shared (fees + blockrewards): " + (totalfees/100000000).toFixed(8) + " (" + config.percentageOfFeesToDistribute + "%/" + config.percentageOfBlockrewardToDistribute + "%) + total MRT: " + totalMRT );
+    var paymentfile = config.filename + sessionid + ".json";
+    var htmlfile = config.filename + sessionid + ".html";
+
+//if ( !BlockCount == 0 ) { transactions.push( { "forgedblocks:": BlockCount } ) }
+
 	const s3_wallet_folder = argobj['s3_wallet_folder']
 	let s3object_payoutfile = s3_wallet_folder + '/'+ datadir+paymentfile
 	let s3body_transactions = transactions
@@ -1051,13 +1125,43 @@ var pay = function() {
 		console.log(' - payment data written to s3:                          / ' + s3bucket + ' / ' + s3object_payoutfile);
 	})
 
+	let s3object_payreportfile = s3_wallet_folder + '/' + datadir+htmlfile
+	let s3body_html = html
+	
+	upload_s3_object_promise (s3bucket, s3object_payreportfile, s3body_html, 'text').then (function (result) { //Upload file to S3
+
+		console.log(' - payreport written to s3:                             / ' + s3bucket + ' / ' + s3object_payreportfile);
+	})
+
+	let s3object_logfile = s3_wallet_folder + '/' + datadir + config.filename + sessionid + '.log'
+	let s3body_logdata = 	  "total Waves fees: " + (totalfees/100000000).toFixed(8) + " total MRT: " + totalMRT + "\n"
+				+ "Total blocks forged: " + BlockCount + "\n"
+				+ "Active leasers: " + Object.keys(myLeases).length + "\n"
+				+ "Generating balance: " + Math.round(generatingbalance / Math.pow(10, 8)) + "\n"
+				+ "NO PAYOUT Waves: " + (nopaywaves/100000000).toFixed(8) + "\n"
+				+ "NO PAYOUT MRT: " +  nopaymrt.toFixed(2) + "\n"
+				+ "Payment ID of batch session: " + config.paymentid + "\n"
+				+ "Payment startblock: " + paymentstartblock + "\n"
+				+ "Payment stopblock: " + paymentstopblock + "\n"
+				+ "Distribution: " + paymentconfigdata.feedistributionpercentage + "%\n"
+				+ "Blockreward sharing: " + blockrewardsharingpercentage + "%\n"
+				+ "Following addresses are skipped for payment; \n"
+				+ JSON.stringify(nofeearray) + "\n"
+
+
 	wavesFeesshared = totalfees
 
+	upload_s3_object_promise (s3bucket, s3object_logfile, s3body_logdata, 'text').then (function (result) { //Upload file to S3
+
+		console.log(' - logfile written to s3:                               / ' + s3bucket + ' / ' + s3object_logfile);
+	});
+
 	const nextstartblock = config.endBlock+1
-    	var latestblockinfo = {};
-    	latestblockinfo["leases"] = myLeases; //All last known active leases, used when next collection batch starts
-    	latestblockinfo["canceledleases"] = myCanceledLeases; //All last known cancelled leases, used when next collection batch starts
-    	var blockleases = 'prevleaseinfo_startblock_' + nextstartblock + '.json';
+    var latestblockinfo = {};
+    latestblockinfo["leases"] = myLeases; //All last known active leases, used when next collection batch starts
+    latestblockinfo["canceledleases"] = myCanceledLeases; //All last known cancelled leases, used when next collection batch starts
+    var blockleases = 'prevleaseinfo_startblock_' + nextstartblock + '.json';
+
 	let s3object_blockleases = s3_wallet_folder + '/' + datadir + blockleases
 	let s3body_blockinfo = latestblockinfo
 	
@@ -1066,7 +1170,9 @@ var pay = function() {
 		console.log(' - blockinfo with leasers for next batch written to s3: / ' + s3bucket + ' / ' + s3object_blockleases);
 	})
 
-	var ActiveLeaseData = getActiveLeasesAtBlock(LastBlock); //Get all lease recipients with amount, active at Lastblock (paystopblock in batchinfo.json) 
+
+    var ActiveLeaseData = getActiveLeasesAtBlock(LastBlock); //Get all lease recipients with amount, active at Lastblock (paystopblock in batchinfo.json) 
+	
 	let s3object_lastblockleasers = s3_wallet_folder +'/' + datadir + lastblockleasersfile
 	let s3body_activeleasedata = ActiveLeaseData
 
@@ -1077,30 +1183,116 @@ var pay = function() {
 
 	uniqueleasersend = Object.keys(ActiveLeaseData.activeLeases).length //Set total unique leasers, global var
 
-   	// update json batchdata for next collection round
-   	// The next start block needs to be endblock +1 because
-   	// the endblock is also taken into account
-   	let nextbatchdata = function () {
+   // Write the current payid of the batch to the payment queue file. This is used by the masspayment tool
+   let paymentqueue = function (callback) {
 
-		let newbatchdata = {}
-		mybatchdata["paymentid"] = (payid + 1).toString()
-		mybatchdata["paystartblock"] = (paymentstopblock+1).toString()
-		mybatchdata["paystopblock"] = (paymentstopblock + blockwindowsize).toString()	
-		mybatchdata["scanstartblock"] = (startscanblock).toString() //First leaser block
-		newbatchdata["batchdata"] = mybatchdata
-		let s3bucket = wld_s3_bucket
-		let s3object = s3_wallet_folder + '/' + datadir + batchinfofile
-		let s3body = newbatchdata
-		let s3upload = upload_s3_object_promise (s3bucket, s3object, s3body, 'json') //Upload file to s3
+        payarray = [ ];
 
-		s3upload.then (function (result) {
-			console.log(' - batchinfofile for next batch written to s3:          / ' + s3bucket + ' / ' + s3object);
+	let s3object_payqueuefile = s3_wallet_folder + '/' + datadir + payqueuefile
+
+	check_s3_object_exists_promise (wld_s3_bucket, s3object_payqueuefile). //Check if we found a previous payqueue file
+
+                then (function (result) { //Promise succesfull, found payqueuefile on s3 object exists
+
+			const rawpayqueue = get_s3_object_promise(wld_s3_bucket, s3object_payqueuefile) //Get payqueuefile 
+
+			rawpayqueue.then (function (pendingpayments) {
+
+				console.log()
+
+				if ( reset === false ) {
+					
+					console.log('Reading queuefile with payjobs...')
+					payarray = JSON.parse(pendingpayments)
+
+				} else { //Do not get payqueue (reset true)
+					console.log('Reset requested by user, payqueue will start empty.')
+				}
+			
+				if ( payarray.length == 0 ) { //No pending payments
+					console.log('No pending payments yet. Add \'' + payid + '\' to queue.')
+					payarray = [ payid ]
+				} else if ( payarray.includes (payid) == true ) { //Batch already in queue
+					console.log('WARNING: Payid \'' + payid + '\' already pending in queue. Payfiles overwritten. Is this a valid collector run?')
+				} else {
+					console.log('There are pending payjobs in the queue already. Adding \'' + payid + '\' to queue.')
+					payarray.push(payid)
+				}
+				
+				console.log("The next batch session will be '" + nextpayid + "'\n");
+	
+				let s3body_batch_ids = payarray
+	
+				upload_s3_object_promise (s3bucket, s3object_payqueuefile, s3body_batch_ids, 'json').then (function (result) { //Upload file to s3
+
+					console.log(' - payqueuefile written to s3:                          / ' + s3bucket + ' / ' + s3object_payqueuefile);
+					console.log('   pending payments in payqueue:                        / [' + payarray + ']')
+				})
+			})
+
+		}).
+
+		catch (function () { //Payqueue file does not exist
+			
+			payarray.push(payid) //Add payid
+			console.log('No pending payments yet. Add \'' + payid + '\' to queue.')
+			console.log("The next batch session will be '" + nextpayid + "'\n");
+	
+			let s3body_batch_ids = payarray
+	
+			upload_s3_object_promise (s3bucket, s3object_payqueuefile, s3body_batch_ids, 'json').then (function (result) { //Upload file to s3
+
+				console.log(' - payqueuefile written to s3:                          / ' + s3bucket + ' / ' + s3object_payqueuefile);
+				console.log('   pending payments in payqueue:                        / [' + payarray + ']')
+			})
+
 		})
-    	};
 
-    	// update the paymentqueue and callback update batchdata function
-    	nextbatchdata; //update next batchdata and write it to batchinfofile on s3
-}; //END pay function
+   	callback();
+
+   }; //END let payment queue
+
+
+   // update json batchdata for next collection round
+   // The next start block needs to be endblock +1 because
+   // the endblock is also taken into account
+   let nextbatchdata = function () {
+
+	let newbatchdata = {}
+	mybatchdata["paymentid"] = (payid + 1).toString()
+	mybatchdata["paystartblock"] = (paymentstopblock+1).toString()
+	mybatchdata["paystopblock"] = (paymentstopblock + blockwindowsize).toString()	
+	//mybatchdata["scanstartblock"] = (paymentstopblock).toString()
+	mybatchdata["scanstartblock"] = (startscanblock).toString() //First leaser block
+	newbatchdata["batchdata"] = mybatchdata
+	
+	let s3bucket = wld_s3_bucket
+	let s3object = s3_wallet_folder + '/' + datadir + batchinfofile
+	let s3body = newbatchdata
+	
+	let s3upload = upload_s3_object_promise (s3bucket, s3object, s3body, 'json') //Upload file to s3
+
+	s3upload.then (function (result) {
+
+		console.log(' - batchinfofile for next batch written to s3:          / ' + s3bucket + ' / ' + s3object);
+
+
+/*
+		fs.unlink(datadir+appngrunfile, (err) => { //All done, remove run file which is checked during startup
+               		if (err) {
+                       		console.error(err)
+                       		return
+               		}
+       		})
+*/
+
+
+	})
+    };
+
+    // update the paymentqueue and callback update batchdata function
+    paymentqueue(nextbatchdata); //Execute updating the payment queue file and then update next batchdata and write it to batchinfofile on s3
+};
 
 
 /**
@@ -1136,6 +1328,7 @@ var getActiveLeasesAtBlock = function(block) {
             totalLeased += lease.amount; //total leased of all leasers for this block
         }
     });
+//console.log(totalLeased)
     return { totalLeased: totalLeased, activeLeases: activeLeasesPerAddress };
 };
 
@@ -1154,9 +1347,21 @@ rawconfiguration.then ( function (rawdata) { //When finished reading config item
 	toolconfigdata = jsonconfiguration['toolbaseconfig']
 	paymentconfigdata = jsonconfiguration['paymentconfig']
 
+	//If no override values are given @program start or from batchinfo.json, below values are set and used
+	//myleasewallet 	  = paymentconfigdata['leasewallet']			//Default node wallet
+	//blockwindowsize   = parseInt(paymentconfigdata['blockwindowsize']) 	//How many blocks to collect
+	//startscanblock 	  = parseInt(paymentconfigdata['firstleaserblock'])	//Where to start scanning
+	//paymentstopblock  = startscanblock + blockwindowsize 			//Scan till block
+	//paymentstartblock = parseInt(paymentconfigdata['paystartblock']) 	//First block from which to take fee sharing into account
+
 	const cli_keys = toolconfigdata['clikeys'] //All possible cli argument keys that can be overwritten
 	get_cli_args(cli_keys); //If cli arguments are given, use these
 	
+	//console.log('\nCLI arguments that will be used [dict argobj]:')
+	//setTimeout ( function () {
+	//	console.log(argobj)
+	//	console.log()
+	//}, 500 )
 	
 	//Set all global vars specific to  collector session
 	s3_wallet_folder		= argobj['s3_wallet_folder']
@@ -1197,7 +1402,7 @@ rawconfiguration.then ( function (rawdata) { //When finished reading config item
 	balancesuri = (apiuris['balances']).replace('{address}', myleasewallet)
 	datadir = toolconfigdata['datadir']; if (datadir.slice(-1) != '/') { datadir = datadir+'/' }
 	batchinfofile = toolconfigdata['batchinfofile']
-	//payqueuefile = toolconfigdata['payqueuefile']
+	payqueuefile = toolconfigdata['payqueuefile']
 	wld_s3_bucket = paymentconfigdata['wld_s3_bucket']
 	lastblockleasersfile = toolconfigdata['lastblockleasersfile']
 	wldaas_s3_trigger_bucket = paymentconfigdata['wldaas_s3_trigger_bucket']
@@ -1224,8 +1429,35 @@ rawconfiguration.then ( function (rawdata) { //When finished reading config item
 	upload_s3_object_promise (wld_s3_bucket, ecs_startfile, ecs_statefile__mybody, 'json').then (function (result) { //Upload file to S3
                 console.log(' - startfile created on s3: /' + wld_s3_bucket + '/' + ecs_startfile);
         })
+/*
+	if ( fs.existsSync(datadir+appngrunfile) ) { //Found app crashfile, alert and exit
+		console.log(	"\nALERT:\n" +
+                    		"Found appng interruptionfile. Apparently appng was interupted abnormally last time!\n" +
+                    		"Normally if collector sessions run 100% fine, this alert should not be given.\n" +
+                    		"Check your logs and if everything is fine, delete the crashfile: '" + appngrunfile + "'\n" +
+                    		"\nGoodbye now!\n")
+
+        	process.exit() //Terminate
+
+	} else { //No crashfile found, proceed
+
+		foldercheck ( datadir ); //function to create data folder if needed
+
+		let dir = false
+
+		while ( dir === false ) { //This loop is needed to wait for the function finish that creates the 'datadir' folder
+
+			if ( fs.existsSync(datadir)) { 
+				fs.closeSync(fs.openSync(datadir + appngrunfile, 'w')) //Touch runfile to detect crashes
+				dir = true
+			}
+		}
+	}
+*/
+
 
 	generatingbalance = JSON.parse(request ( "GET", myquerynode + balancesuri, { json: true } ).body).generating //GET generating balance of wallet
+
 
 	check_s3_object_exists_promise (wld_s3_bucket, s3_batchinfofile). //Check if we found a previous batchinfo file (so we know the block heights)
 		
@@ -1233,7 +1465,10 @@ rawconfiguration.then ( function (rawdata) { //When finished reading config item
 
 			const rawbatchinfo = get_s3_object_promise(wld_s3_bucket, s3_batchinfofile) //Get batchinfo data from s3 
 
+
 			rawbatchinfo.then ( function (rawdata) { //When async request has finished, do..
+
+				console.log()
 
 				if ( reset === false ) { //Use previous batchinfo data
 
@@ -1286,6 +1521,17 @@ rawconfiguration.then ( function (rawdata) { //When finished reading config item
         				console.log(" This is approximaly in ~" + Math.round((blocksleft)/60) + " hrs (" + (Math.round((blocksleft/60/24)*100))/100 + " days).\n")
 					console.log(" You can safely force collection start with argument '/now', i.e. 'node appng /now' if you do")
 					console.log(" not want to wait. This will use lastblockheight " + lastblockheight + " as paymentstopblock.\n")
+	
+
+/*
+					fs.unlink(datadir+appngrunfile, (err) => { //All done, remove run file which is checked during startup
+						if (err) {
+							console.error(err)
+                        				return
+                				}
+        				})
+*/
+
 
         				return;
 
@@ -1397,6 +1643,7 @@ rawconfiguration.then ( function (rawdata) { //When finished reading config item
 
 			payid = 1
 			nextpayid = payid + 1
+			//paymentstopblock = startscanblock + blockwindowsize (already declared, can be removed if tested succesfully)
 
 			batchinfo = { "batchdata" :
 					{
@@ -1439,6 +1686,9 @@ rawconfiguration.then ( function (rawdata) { //When finished reading config item
 			start();
 
 		}); //END catch & check_s3_object_exists_promise function
+
+
+
 
 }); //End rawconfiguration.then
 
