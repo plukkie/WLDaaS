@@ -20,6 +20,7 @@ const appngrunfile = 'appng.run'
 const nopaytriggerfileprefix	= 'collected_'
 const paytriggerfileprefix	= 'payjob_'
 const http = require('http')
+const rewarddevider = 3
 
 var request = require('sync-request');
 var fs = require('fs');
@@ -892,8 +893,9 @@ var catch_relevant_blocks = function (startbl, index, block, myblock, wavesFees,
       if (myblock == true) {  //This block is written by my waves node
 	        // This is the blockreward amount with sharing % applied from configfile and the 100% amount
 		if (block.height >= 1740000) { 
-			wavesFeesfull += block.reward
-			wavesFees += ( block.reward * blockrewardsharingpercentage ) / 100
+			let myreward = block.reward / rewarddevider
+                        wavesFeesfull += myreward
+                        wavesFees += ( myreward * blockrewardsharingpercentage ) / 100
 		} //Feature 14 activated at 1740000
       }
       
