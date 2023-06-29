@@ -13,24 +13,15 @@
 //////////////////////////////////////////////////
 
 const configfile = 'config.json' //json file with appng.js settings
-<<<<<<< HEAD
-const s3_config_bucket = 'plukkie' //aws s3 bucket where configfile is stored
-const s3_settings_path = 'scriptsettings/waveslposdistributer/' //sub path for configfile object
-=======
 const s3_config_bucket = '<<AWS s3 bucket>>' //aws s3 bucket where configfile is stored
 const s3_settings_path = '<<AWS s3 subpath>>' //sub path for configfile object
->>>>>>> 52342eadec173ff020c00f4e8f6406e5e63916e1
 const s3_config_object = s3_settings_path + configfile //full aws s3 object
 const appngrunfile = 'appng.run' 
 const nopaytriggerfileprefix	= 'collected_'
 const paytriggerfileprefix	= 'payjob_'
 const http = require('http')
-<<<<<<< HEAD
 const wavesdao = 200000000
 const xtn = 200000000
-=======
-const rewarddevider = 3
->>>>>>> 52342eadec173ff020c00f4e8f6406e5e63916e1
 
 var request = require('sync-request');
 var fs = require('fs');
@@ -903,7 +894,6 @@ var catch_relevant_blocks = function (startbl, index, block, myblock, wavesFees,
       if (myblock == true) {  //This block is written by my waves node
 	        // This is the blockreward amount with sharing % applied from configfile and the 100% amount
 		if (block.height >= 1740000) { 
-<<<<<<< HEAD
 
 			var myreward
 
@@ -917,11 +907,6 @@ var catch_relevant_blocks = function (startbl, index, block, myblock, wavesFees,
 
 			wavesFeesfull += myreward
 			wavesFees += ( myreward * blockrewardsharingpercentage ) / 100
-=======
-			let myreward = block.reward / rewarddevider
-                        wavesFeesfull += myreward
-                        wavesFees += ( myreward * blockrewardsharingpercentage ) / 100
->>>>>>> 52342eadec173ff020c00f4e8f6406e5e63916e1
 		} //Feature 14 activated at 1740000
       }
       
